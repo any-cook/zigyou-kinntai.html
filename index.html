@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勤怠記録システム</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --bg-tertiary: #f0efe8;
+    --text: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-tertiary: #9e9e9a;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.22);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-dark: #0C447C;
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #085041;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-dark: #633806;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --font: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg-secondary: #252523;
+      --bg-tertiary: #2e2e2c;
+      --text: #f0efe8;
+      --text-secondary: #9e9e9a;
+      --text-tertiary: #6b6b67;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.2);
+      --blue-light: #042C53;
+      --blue-dark: #85B7EB;
+      --green-light: #04342C;
+      --green-dark: #9FE1CB;
+      --amber-light: #412402;
+      --amber-dark: #FAC775;
+      --red-light: #501313;
+    }
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg-tertiary);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { font-size: 15px; font-weight: 600; color: var(--blue); }
+  .header-badge {
+    font-size: 11px; background: var(--blue-light); color: var(--blue-dark);
+    padding: 3px 10px; border-radius: 20px; font-weight: 500;
+  }
+  .header-right { margin-left: auto; font-size: 12px; color: var(--text-tertiary); display: flex; gap: 12px; align-items: center; }
+
+  .tab-bar {
+    display: flex;
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 1.5rem;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 11px 18px;
+    border: none; background: none; cursor: pointer;
+    font-size: 13px; color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px; white-space: nowrap;
+    font-family: var(--font); transition: color 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 1rem; }
+
+  /* Login screen */
+  .login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+  }
+
+  .login-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    width: 360px;
+    text-align: center;
+  }
+
+  .login-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--blue-light);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 22px;
+  }
+
+  .login-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+
+  .login-form { text-align: left; display: flex; flex-direction: column; gap: 14px; }
+  .login-form label { font-size: 12px; font-weight: 500; color: var(--text-secondary); display: block; margin-bottom: 4px; }
+  .login-form input {
+    width: 100%; height: 40px;
+    border: 0.5px solid var(--border-md); border-radius: var(--radius-md);
+    padding: 0 12px; font-size: 14px;
+    background: var(--bg); color: var(--text); font-family: var(--font);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .login-form input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.15); }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+  .form-group input, .form-group select {
+    height: 38px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md);
+    padding: 0 12px; font-size: 14px;
+    background: var(--bg); color: var(--text); font-family: var(--font);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.15);
+  }
+  .full-width { grid-column: 1 / -1; }
+
+  /* Buttons */
+  .btn {
+    height: 36px; padding: 0 18px; border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-md); cursor: pointer;
+    font-size: 13px; font-family: var(--font);
+    background: var(--bg); color: var(--text);
+    transition: background 0.12s, transform 0.1s;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .btn.primary:hover { background: var(--blue-dark); }
+  .btn.lg { height: 42px; font-size: 14px; font-weight: 500; width: 100%; justify-content: center; }
+  .btn.danger { color: var(--red); border-color: var(--red); }
+  .btn.danger:hover { background: var(--red-light); }
+
+  /* Msg */
+  .msg { padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 1rem; display: none; line-height: 1.5; }
+  .msg.success { background: var(--green-light); color: var(--green-dark); }
+  .msg.error { background: var(--red-light); color: var(--red); }
+
+  /* Badge */
+  .badge {
+    display: inline-block; font-size: 11px; padding: 3px 8px;
+    border-radius: var(--radius-md); white-space: nowrap; font-weight: 500;
+  }
+  .badge.blue { background: var(--blue-light); color: var(--blue-dark); }
+  .badge.green { background: var(--green-light); color: var(--green-dark); }
+  .badge.amber { background: var(--amber-light); color: var(--amber-dark); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--bg-secondary); font-weight: 500; text-align: left;
+    padding: 9px 12px; border-bottom: 0.5px solid var(--border);
+    white-space: nowrap; font-size: 12px; color: var(--text-secondary);
+  }
+  td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-secondary); }
+
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  .filter-bar select, .filter-bar input[type="month"] {
+    height: 34px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md);
+    padding: 0 10px; font-size: 13px; background: var(--bg); color: var(--text); font-family: var(--font);
+  }
+  .filter-bar label { font-size: 12px; color: var(--text-secondary); }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-tertiary); font-size: 13px; line-height: 1.8; }
+
+  .preview-pill {
+    font-size: 13px; color: var(--text-secondary);
+    padding: 6px 14px; background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+  }
+
+  .user-info-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; background: var(--blue-light);
+    border-radius: var(--radius-md); margin-bottom: 1rem;
+    font-size: 13px; color: var(--blue-dark);
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+
+  .summary-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem;
+  }
+  .summary-cell {
+    background: var(--bg-secondary); border-radius: var(--radius-md);
+    padding: 12px; text-align: center;
+  }
+  .summary-cell .s-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .summary-cell .s-value { font-size: 20px; font-weight: 600; }
+
+  .scroll-hint { font-size: 11px; color: var(--text-tertiary); text-align: right; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN SCREEN
+     ============================================================ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🕐</div>
+    <div class="login-title">勤怠記録システム</div>
+    <div class="login-sub">お名前を入力してログインしてください</div>
+    <div class="login-form">
+      <div>
+        <label>氏名</label>
+        <input type="text" id="login-name" placeholder="例：田中 太郎"
+          autocomplete="name"
+          onkeydown="if(event.key==='Enter')login()"
+          oninput="clearLoginMsg()">
+      </div>
+      <div id="login-msg" class="msg" style="margin-bottom:0"></div>
+      <button class="btn primary lg" onclick="login()">ログイン</button>
+      <div style="text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:4px">
+        管理者の方は <a href="admin.html" style="color:var(--blue);text-decoration:none">管理者画面</a> からログインしてください
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP
+     ============================================================ -->
+<div id="app" style="display:none">
+
+<header>
+  <div class="logo">勤怠記録システム</div>
+  <div class="header-badge">スタッフ</div>
+  <div class="header-right">
+    <span id="header-date"></span>
+    <button class="btn" style="height:28px;font-size:12px;padding:0 12px" onclick="logout()">ログアウト</button>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('input')">打刻・記入</button>
+  <button class="tab-btn" onclick="switchTab('myrecords')">自分の記録</button>
+</div>
+
+<div class="container">
+
+  <!-- ===== 打刻・記入 ===== -->
+  <div class="page active" id="tab-input">
+    <div class="card">
+      <div id="user-info-bar" class="user-info-bar"></div>
+      <div class="section-title">出勤記録を追加</div>
+      <div id="input-msg" class="msg"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>日付 *</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="form-group">
+          <label>出勤時間 *</label>
+          <input type="time" id="f-start" value="09:00">
+        </div>
+        <div class="form-group">
+          <label>退勤時間 *</label>
+          <input type="time" id="f-end" value="18:00">
+        </div>
+        <div class="form-group">
+          <label>休憩時間（分）</label>
+          <input type="number" id="f-break" value="60" min="0" max="480" step="15">
+        </div>
+        <div class="full-width">
+          <div class="form-group">
+            <label>備考</label>
+            <input type="text" id="f-note" placeholder="有給・在宅・外出など（任意）">
+          </div>
+        </div>
+        <div class="full-width" style="display:flex;gap:10px;align-items:center;margin-top:4px">
+          <button class="btn primary" onclick="addRecord()">記録を追加</button>
+          <div class="preview-pill" id="calc-preview">実働時間を自動計算します</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="font-size:15px">選択日の自分の記録</div>
+      <div id="today-list"><div class="empty">まだ記録がありません</div></div>
+    </div>
+  </div>
+
+  <!-- ===== 自分の記録 ===== -->
+  <div class="page" id="tab-myrecords">
+    <div class="card">
+      <div class="section-title">自分の記録確認</div>
+      <div class="filter-bar">
+        <label>月：</label>
+        <input type="month" id="my-month" onchange="renderMyRecords()">
+        <button class="btn" onclick="renderMyRecords()">表示</button>
+      </div>
+      <div class="summary-row" id="my-summary">
+        <div class="summary-cell"><div class="s-label">出勤日数</div><div class="s-value">—</div></div>
+        <div class="summary-cell"><div class="s-label">総実働時間</div><div class="s-value">—</div></div>
+        <div class="summary-cell"><div class="s-label">総休憩時間</div><div class="s-value">—</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>日付</th><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>備考</th><th></th></tr>
+          </thead>
+          <tbody id="my-records-body">
+            <tr><td colspan="7"><div class="empty">記録がありません</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="scroll-hint" id="my-count"></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /app -->
+
+<script>
+// ============================================================
+//  Storage helpers
+// ============================================================
+function getData() {
+  try { return JSON.parse(localStorage.getItem('work_hours_v2') || '{"staff":[],"records":[]}'); }
+  catch(e) { return { staff: [], records: [] }; }
+}
+
+function setData(d) {
+  localStorage.setItem('work_hours_v2', JSON.stringify(d));
+}
+
+// ============================================================
+//  Auth
+// ============================================================
+let currentUser = null;
+
+function clearLoginMsg() {
+  const msg = document.getElementById('login-msg');
+  if (msg) msg.style.display = 'none';
+}
+
+function getActiveStaffNames() {
+  try {
+    const d = JSON.parse(localStorage.getItem('work_hours_v2') || '{}');
+    const staff = Array.isArray(d.staff) ? d.staff : [];
+    return staff
+      .map(s => typeof s === 'string' ? { name: s, active: true } : s)
+      .filter(s => s.active !== false)
+      .map(s => s.name);
+  } catch(e) { return []; }
+}
+
+function login() {
+  const name = document.getElementById('login-name').value.trim();
+  const msg  = document.getElementById('login-msg');
+  if (!name) {
+    showMsg(msg, 'error', '氏名を入力してください。');
+    return;
+  }
+  const validNames = getActiveStaffNames();
+  if (!validNames.includes(name)) {
+    showMsg(msg, 'error', '登録されていない名前です。正確に入力するか、管理者に登録を依頼してください。');
+    return;
+  }
+  currentUser = name;
+  sessionStorage.setItem('staff_user', name);
+  showApp();
+}
+
+function logout() {
+  sessionStorage.removeItem('staff_user');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-name').value = '';
+  clearLoginMsg();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+}
+
+// ============================================================
+//  Init
+// ============================================================
+function initApp() {
+  const today = new Date().toISOString().split('T')[0];
+  const month = today.slice(0, 7);
+  document.getElementById('f-date').value = today;
+  document.getElementById('my-month').value = month;
+  document.getElementById('header-date').textContent =
+    new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+  const ini = currentUser.split(' ').map(s => s[0] || '').join('').slice(0, 2).toUpperCase();
+  document.getElementById('user-info-bar').innerHTML =
+    '<div class="user-avatar">' + ini + '</div>' +
+    '<div><strong>' + currentUser + '</strong> さんとしてログイン中</div>';
+
+  ['f-start', 'f-end', 'f-break'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+  });
+  document.getElementById('f-date').addEventListener('change', renderToday);
+  updatePreview();
+  renderToday();
+}
+
+// ============================================================
+//  Utilities
+// ============================================================
+function timeToMin(t) {
+  if (!t) return 0;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+function minToH(m) { return (m / 60).toFixed(2); }
+function calcWork(start, end, brk) {
+  const s = timeToMin(start), e = timeToMin(end), b = parseInt(brk) || 0;
+  if (!start || !end || e <= s) return null;
+  return Math.max(0, e - s - b);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['input', 'myrecords'][i] === tab);
+  });
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + tab);
+  });
+  if (tab === 'myrecords') renderMyRecords();
+}
+
+function showMsg(el, type, text) {
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// ============================================================
+//  Preview
+// ============================================================
+function updatePreview() {
+  const s = document.getElementById('f-start').value;
+  const e = document.getElementById('f-end').value;
+  const b = document.getElementById('f-break').value;
+  const el = document.getElementById('calc-preview');
+  if (!s || !e) { el.textContent = '出退勤時間を入力してください'; el.style.color = ''; return; }
+  const mins = calcWork(s, e, b);
+  if (mins === null || mins < 0) {
+    el.textContent = '⚠ 退勤時間が出勤より前です'; el.style.color = 'var(--red)';
+  } else {
+    el.textContent = '実働 ' + minToH(mins) + 'h（' + mins + '分）'; el.style.color = '';
+  }
+}
+
+// ============================================================
+//  Add record
+// ============================================================
+function addRecord() {
+  const date  = document.getElementById('f-date').value;
+  const start = document.getElementById('f-start').value;
+  const end   = document.getElementById('f-end').value;
+  const brk   = document.getElementById('f-break').value;
+  const note  = document.getElementById('f-note').value.trim();
+  const msg   = document.getElementById('input-msg');
+
+  if (!date || !start || !end) { showMsg(msg, 'error', '日付・出勤時間・退勤時間は必須です。'); return; }
+  const work = calcWork(start, end, brk);
+  if (work === null || work < 0) { showMsg(msg, 'error', '退勤時間が出勤時間より前になっています。'); return; }
+
+  const d = getData();
+  d.records.push({ id: Date.now(), name: currentUser, date, start, end, break: parseInt(brk) || 0, work, note });
+  d.records.sort((a, b) => a.date.localeCompare(b.date));
+  setData(d);
+
+  showMsg(msg, 'success', date + ' の記録を追加しました。実働 ' + minToH(work) + 'h');
+  renderToday();
+}
+
+// ============================================================
+//  Today list
+// ============================================================
+function renderToday() {
+  const date = document.getElementById('f-date').value;
+  const list = document.getElementById('today-list');
+  const recs = getData().records.filter(r => r.date === date && r.name === currentUser);
+  if (!recs.length) { list.innerHTML = '<div class="empty">この日の記録はまだありません</div>'; return; }
+  list.innerHTML = '<div class="table-wrap"><table>' +
+    '<thead><tr><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>備考</th><th></th></tr></thead>' +
+    '<tbody>' + recs.map(r =>
+      '<tr>' +
+      '<td>' + r.start + '</td><td>' + r.end + '</td>' +
+      '<td>' + r.break + '</td>' +
+      '<td><span class="badge green">' + minToH(r.work) + 'h</span></td>' +
+      '<td style="color:var(--text-secondary)">' + (r.note || '') + '</td>' +
+      '<td><button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteMyRecord(' + r.id + ')">削除</button></td>' +
+      '</tr>'
+    ).join('') + '</tbody></table></div>';
+}
+
+function deleteMyRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  const d = getData();
+  d.records = d.records.filter(r => !(r.id === id && r.name === currentUser));
+  setData(d);
+  renderToday();
+}
+
+// ============================================================
+//  My records
+// ============================================================
+function renderMyRecords() {
+  const month = document.getElementById('my-month').value;
+  let recs = getData().records.filter(r => r.name === currentUser);
+  if (month) recs = recs.filter(r => r.date.startsWith(month));
+  recs = [...recs].reverse();
+
+  const days  = new Set(recs.map(r => r.date)).size;
+  const work  = recs.reduce((s, r) => s + r.work, 0);
+  const brk   = recs.reduce((s, r) => s + r.break, 0);
+
+  document.getElementById('my-summary').innerHTML = [
+    ['出勤日数', days + ' 日'],
+    ['総実働時間', minToH(work) + ' h'],
+    ['総休憩時間', Math.round(brk / 60 * 10) / 10 + ' h'],
+  ].map(([l, v]) =>
+    '<div class="summary-cell"><div class="s-label">' + l + '</div><div class="s-value">' + v + '</div></div>'
+  ).join('');
+
+  const body  = document.getElementById('my-records-body');
+  const count = document.getElementById('my-count');
+
+  if (!recs.length) {
+    body.innerHTML = '<tr><td colspan="7"><div class="empty">この月の記録がありません</div></td></tr>';
+    count.textContent = '';
+    return;
+  }
+
+  body.innerHTML = recs.map(r =>
+    '<tr>' +
+    '<td>' + r.date + '</td><td>' + r.start + '</td><td>' + r.end + '</td>' +
+    '<td style="text-align:right">' + r.break + '</td>' +
+    '<td><span class="badge green">' + minToH(r.work) + 'h</span></td>' +
+    '<td style="color:var(--text-secondary)">' + (r.note || '') + '</td>' +
+    '<td><button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteMyRecord2(' + r.id + ')">削除</button></td>' +
+    '</tr>'
+  ).join('');
+  count.textContent = recs.length + ' 件表示中';
+}
+
+function deleteMyRecord2(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  const d = getData();
+  d.records = d.records.filter(r => !(r.id === id && r.name === currentUser));
+  setData(d);
+  renderMyRecords();
+}
+
+// ============================================================
+//  Boot
+// ============================================================
+const saved = sessionStorage.getItem('staff_user');
+if (saved) { currentUser = saved; showApp(); }
+</script>
+</body>
+</html>
