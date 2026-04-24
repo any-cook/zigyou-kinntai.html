@@ -340,6 +340,51 @@
 </div><!-- /container -->
 </div><!-- /app -->
 
+<!-- 編集モーダル -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--bg);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="font-size:16px;font-weight:600">記録を編集</div>
+      <button onclick="closeEditModal()" style="border:none;background:none;cursor:pointer;font-size:20px;color:var(--text-secondary);line-height:1">×</button>
+    </div>
+    <div id="edit-msg" class="msg"></div>
+    <input type="hidden" id="edit-docid">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">氏名 *</label>
+        <input type="text" id="edit-name" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font)">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">日付 *</label>
+        <input type="date" id="edit-date" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font)">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">出勤時間 *</label>
+        <input type="time" id="edit-start" oninput="updateEditPreview()" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font)">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">退勤時間 *</label>
+        <input type="time" id="edit-end" oninput="updateEditPreview()" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font)">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">休憩時間（分）</label>
+        <input type="number" id="edit-break" min="0" max="480" step="15" oninput="updateEditPreview()" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font);text-align:right">
+      </div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+        <div id="edit-preview" style="font-size:13px;color:var(--text-secondary);padding:6px 12px;background:var(--bg-secondary);border-radius:var(--radius-md);width:100%;text-align:center"></div>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:12px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:4px">備考</label>
+        <input type="text" id="edit-note" placeholder="任意" style="width:100%;height:38px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 12px;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--font)">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:1.5rem;justify-content:flex-end">
+      <button class="btn" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn primary" onclick="saveEdit()" style="background:var(--purple);border-color:var(--purple)">保存する</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
@@ -433,6 +478,13 @@ function fmtYen(v){return '¥'+Math.round(v).toLocaleString();}
 function initials(n){return(n||'').split(' ').map(s=>s[0]||'').join('').slice(0,2).toUpperCase();}
 function getWage(name){const s=staffCache.find(s=>s.name===name);return s?(s.wage||0):0;}
 function calcSalary(work,wage){return Math.round((work/60)*wage);}
+function calcWork(s,e,b){
+  const sm=timeToMin(s),em=timeToMin(e),bm=parseInt(b)||0;
+  if(!s||!e||em<=sm)return null;
+  // 15分以下の休憩は実働から引かない
+  const deduct=bm<=15?0:bm;
+  return Math.max(0,em-sm-deduct);
+}
 
 function showMsg(el,type,text){
   el.className='msg '+type;el.textContent=text;el.style.display='block';
@@ -542,8 +594,10 @@ function populateExportNameFilter(){
 // ── Records ──
 async function loadRecords(){
   try{
-    const snap=await getDocs(query(collection(db,'records'),orderBy('date','asc')));
+    // orderByなしで取得しクライアントでソート（インデックス不要）
+    const snap=await getDocs(collection(db,'records'));
     recordsCache=snap.docs.map(d=>({...d.data(),docId:d.id}));
+    recordsCache.sort((a,b)=>a.date.localeCompare(b.date));
     populateNameFilter();
   }catch(e){console.error(e);}
 }
@@ -630,9 +684,63 @@ window.renderRecords = () => {
       '<td style="text-align:right;color:var(--text-secondary)">'+(wage?fmtYen(wage):'—')+'</td>'+
       '<td>'+(sal!==null?'<span class="badge purple">'+fmtYen(sal)+'</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'+
       '<td style="color:var(--text-secondary)">'+(r.note||'')+'</td>'+
-      '<td><button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteRecord(\''+r.docId+'\')">削除</button></td></tr>';
+      '<td style="display:flex;gap:4px;padding:6px 12px">'+
+        '<button class="btn" style="height:26px;padding:0 10px;font-size:11px;color:var(--blue);border-color:var(--blue)" onclick="openEditModal(\''+r.docId+'\')">編集</button>'+
+        '<button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteRecord(\''+r.docId+'\')">削除</button>'+
+      '</td></tr>';
   }).join('');
   count.textContent=recs.length+' 件表示中';
+};
+
+// ── Edit Modal ──
+window.openEditModal = (docId) => {
+  const r = recordsCache.find(r=>r.docId===docId);
+  if(!r) return;
+  document.getElementById('edit-docid').value  = docId;
+  document.getElementById('edit-name').value   = r.name;
+  document.getElementById('edit-date').value   = r.date;
+  document.getElementById('edit-start').value  = r.start;
+  document.getElementById('edit-end').value    = r.end;
+  document.getElementById('edit-break').value  = r.break;
+  document.getElementById('edit-note').value   = r.note||'';
+  updateEditPreview();
+  document.getElementById('edit-modal').style.display='flex';
+};
+
+window.closeEditModal = () => {
+  document.getElementById('edit-modal').style.display='none';
+};
+
+window.updateEditPreview = () => {
+  const s=document.getElementById('edit-start').value;
+  const e=document.getElementById('edit-end').value;
+  const b=document.getElementById('edit-break').value;
+  const el=document.getElementById('edit-preview');
+  const m=calcWork(s,e,b);
+  if(m===null||m<0){el.textContent='⚠ 退勤時間が出勤より前です';el.style.color='var(--red)';}
+  else{el.textContent='実働 '+minToH(m)+'h（'+m+'分）';el.style.color='';}
+};
+
+window.saveEdit = async () => {
+  const docId = document.getElementById('edit-docid').value;
+  const name  = document.getElementById('edit-name').value.trim();
+  const date  = document.getElementById('edit-date').value;
+  const start = document.getElementById('edit-start').value;
+  const end   = document.getElementById('edit-end').value;
+  const brk   = parseInt(document.getElementById('edit-break').value)||0;
+  const note  = document.getElementById('edit-note').value.trim();
+  const msg   = document.getElementById('edit-msg');
+
+  if(!name||!date||!start||!end){showMsg(msg,'error','必須項目を入力してください。');return;}
+  const work=calcWork(start,end,brk);
+  if(work===null||work<0){showMsg(msg,'error','退勤時間が出勤時間より前になっています。');return;}
+
+  try{
+    await setDoc(doc(db,'records',docId),{name,date,start,end,break:brk,work,note,updatedAt:Date.now()});
+    closeEditModal();
+    await loadRecords();
+    renderRecords();
+  }catch(e){showMsg(msg,'error','保存に失敗しました。');}
 };
 
 window.deleteRecord = async (docId) => {

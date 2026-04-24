@@ -362,7 +362,9 @@ function minToH(m) { return (m/60).toFixed(2); }
 function calcWork(s,e,b) {
   const sm=timeToMin(s),em=timeToMin(e),bm=parseInt(b)||0;
   if(!s||!e||em<=sm) return null;
-  return Math.max(0,em-sm-bm);
+  // 15分以下の休憩は実働時間から引かない
+  const deduct = bm <= 15 ? 0 : bm;
+  return Math.max(0,em-sm-deduct);
 }
 
 window.switchTab = (tab) => {
@@ -457,14 +459,16 @@ async function renderMyRecords() {
   body.innerHTML='<tr><td colspan="7"><div class="empty">読み込み中...</div></td></tr>';
 
   try {
+    // orderByを使わずname絞り込みのみ（インデックス不要）
     const q = query(
       collection(db,'records'),
-      where('name','==',currentUser),
-      orderBy('date','desc')
+      where('name','==',currentUser)
     );
     const snap = await getDocs(q);
     let recs = snap.docs.map(d=>({...d.data(),docId:d.id}));
     if(month) recs=recs.filter(r=>r.date.startsWith(month));
+    // クライアント側で日付降順ソート
+    recs.sort((a,b)=>b.date.localeCompare(a.date));
 
     const days = new Set(recs.map(r=>r.date)).size;
     const work = recs.reduce((s,r)=>s+r.work,0);
@@ -490,6 +494,7 @@ async function renderMyRecords() {
     ).join('');
     count.textContent=recs.length+' 件表示中';
   } catch(e) {
+    console.error(e);
     body.innerHTML='<tr><td colspan="7"><div class="empty">読み込みエラー。ネットワークを確認してください。</div></td></tr>';
   }
 }
