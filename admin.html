@@ -16,12 +16,11 @@
     --amber:#BA7517; --amber-light:#FAEEDA; --amber-dark:#633806;
     --red:#A32D2D; --red-light:#FCEBEB;
     --purple:#534AB7; --purple-light:#EEEDFE; --purple-dark:#3C3489;
-    --teal:#0F6E56; --teal-light:#E1F5EE; --teal-dark:#04342C;
     --font:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
     --font-mono:'SF Mono','Fira Code','Consolas',monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media(prefers-color-scheme:dark){
+    :root{
       --bg:#1c1c1a; --bg-secondary:#252523; --bg-tertiary:#2e2e2c;
       --text:#f0efe8; --text-secondary:#9e9e9a; --text-tertiary:#6b6b67;
       --border:rgba(255,255,255,0.1); --border-md:rgba(255,255,255,0.2);
@@ -30,12 +29,15 @@
       --amber-light:#412402; --amber-dark:#FAC775;
       --red-light:#501313;
       --purple-light:#26215C; --purple-dark:#AFA9EC;
-      --teal-light:#04342C; --teal-dark:#9FE1CB;
     }
   }
   body { font-family:var(--font); font-size:14px; color:var(--text); background:var(--bg-tertiary); min-height:100vh; }
 
-  /* ── Login ── */
+  .loading-overlay { position:fixed; inset:0; background:var(--bg-tertiary); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999; gap:14px; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--purple); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .loading-text { font-size:13px; color:var(--text-secondary); }
+
   .login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; }
   .login-card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:2.5rem 2rem; width:380px; text-align:center; }
   .login-icon { width:60px; height:60px; border-radius:50%; background:var(--purple-light); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:24px; }
@@ -45,8 +47,8 @@
   .login-form label { font-size:12px; font-weight:500; color:var(--text-secondary); display:block; margin-bottom:4px; }
   .login-form input { width:100%; height:40px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 12px; font-size:14px; background:var(--bg); color:var(--text); font-family:var(--font); }
   .login-form input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 3px rgba(83,74,183,0.15); }
+  .pw-hint { font-size:12px; color:var(--text-tertiary); margin-top:4px; }
 
-  /* ── Layout ── */
   header { background:var(--bg); border-bottom:0.5px solid var(--border); padding:0 1.5rem; display:flex; align-items:center; gap:12px; height:52px; position:sticky; top:0; z-index:100; }
   .logo { font-size:15px; font-weight:600; color:var(--purple); }
   .header-badge { font-size:11px; background:var(--purple-light); color:var(--purple-dark); padding:3px 10px; border-radius:20px; font-weight:500; }
@@ -58,12 +60,9 @@
   .container { max-width:980px; margin:0 auto; padding:1.5rem; }
   .page { display:none; }
   .page.active { display:block; }
-
-  /* ── Cards ── */
   .card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem 1.5rem; margin-bottom:1rem; }
   .section-title { font-size:16px; font-weight:600; margin-bottom:1rem; }
 
-  /* ── Buttons ── */
   .btn { height:36px; padding:0 18px; border-radius:var(--radius-md); border:0.5px solid var(--border-md); cursor:pointer; font-size:13px; font-family:var(--font); background:var(--bg); color:var(--text); transition:background .12s,transform .1s; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
   .btn:hover { background:var(--bg-secondary); }
   .btn:active { transform:scale(0.98); }
@@ -74,33 +73,26 @@
   .btn.lg { height:42px; font-size:14px; font-weight:500; width:100%; justify-content:center; }
   .btn.danger { color:var(--red); border-color:var(--red); }
   .btn.danger:hover { background:var(--red-light); }
-  .btn.teal { background:var(--teal); color:#fff; border-color:var(--teal); }
-  .btn.teal:hover { background:var(--teal-dark); }
 
-  /* ── Msgs ── */
   .msg { padding:10px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:1rem; display:none; line-height:1.5; }
   .msg.success { background:var(--green-light); color:var(--green-dark); }
   .msg.error { background:var(--red-light); color:var(--red); }
 
-  /* ── Stats ── */
   .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:1.5rem; }
   .stat-card { background:var(--bg-secondary); border-radius:var(--radius-md); padding:1rem; text-align:center; }
+  .stat-card.highlight { background:var(--purple-light); }
+  .stat-card.highlight .stat-value { color:var(--purple-dark); }
   .stat-label { font-size:11px; color:var(--text-secondary); margin-bottom:6px; }
   .stat-value { font-size:22px; font-weight:600; }
   .stat-sub { font-size:11px; color:var(--text-tertiary); margin-top:4px; }
-  .stat-card.highlight { background:var(--purple-light); }
-  .stat-card.highlight .stat-value { color:var(--purple-dark); }
 
-  /* ── Badges ── */
   .badge { display:inline-block; font-size:11px; padding:3px 8px; border-radius:var(--radius-md); white-space:nowrap; font-weight:500; }
   .badge.blue { background:var(--blue-light); color:var(--blue-dark); }
   .badge.green { background:var(--green-light); color:var(--green-dark); }
   .badge.amber { background:var(--amber-light); color:var(--amber-dark); }
   .badge.purple { background:var(--purple-light); color:var(--purple-dark); }
-  .badge.teal { background:var(--teal-light); color:var(--teal-dark); }
   .badge.red { background:var(--red-light); color:var(--red); }
 
-  /* ── Table ── */
   .table-wrap { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
   th { background:var(--bg-secondary); font-weight:500; text-align:left; padding:9px 12px; border-bottom:0.5px solid var(--border); white-space:nowrap; font-size:12px; color:var(--text-secondary); }
@@ -108,12 +100,10 @@
   tr:last-child td { border-bottom:none; }
   tbody tr:hover td { background:var(--bg-secondary); }
 
-  /* ── Filter bar ── */
   .filter-bar { display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; align-items:center; }
-  .filter-bar select, .filter-bar input[type="month"] { height:34px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 10px; font-size:13px; background:var(--bg); color:var(--text); font-family:var(--font); }
+  .filter-bar select,.filter-bar input[type="month"] { height:34px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 10px; font-size:13px; background:var(--bg); color:var(--text); font-family:var(--font); }
   .filter-bar label { font-size:12px; color:var(--text-secondary); }
 
-  /* ── Person cards ── */
   .person-card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); margin-bottom:1rem; overflow:hidden; }
   .person-card-header { display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--bg-secondary); flex-wrap:wrap; }
   .avatar { width:40px; height:40px; border-radius:50%; background:var(--purple-light); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--purple-dark); flex-shrink:0; }
@@ -121,50 +111,44 @@
   .person-stats { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .person-avg { font-size:12px; color:var(--text-secondary); margin-left:4px; }
   .person-card-body { padding:14px 18px; }
-
-  /* ── Salary highlight ── */
   .salary-badge { display:inline-flex; align-items:center; gap:4px; background:var(--purple-light); color:var(--purple-dark); border-radius:var(--radius-md); padding:4px 10px; font-size:12px; font-weight:600; }
   .wage-tag { font-size:11px; color:var(--text-tertiary); background:var(--bg-tertiary); border-radius:var(--radius-md); padding:2px 8px; }
 
-  /* ── Empty ── */
   .empty { text-align:center; padding:3rem 1rem; color:var(--text-tertiary); font-size:13px; line-height:1.8; }
+  .scroll-hint { font-size:11px; color:var(--text-tertiary); text-align:right; margin-top:6px; }
+  .divider { margin:1.5rem 0; border:none; border-top:0.5px solid var(--border); }
 
-  /* ── Staff list ── */
-  .staff-list { list-style:none; }
-  .staff-row { display:grid; grid-template-columns:40px 1fr auto auto; gap:12px; align-items:center; padding:10px 0; border-bottom:0.5px solid var(--border); }
-  .staff-row:last-child { border-bottom:none; }
-  .staff-wage-input { height:34px; width:110px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 10px; font-size:13px; background:var(--bg); color:var(--text); font-family:var(--font); text-align:right; }
-  .staff-wage-input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 2px rgba(83,74,183,0.15); }
-
-  /* ── Form ── */
   .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
   .form-group label { font-size:12px; font-weight:500; color:var(--text-secondary); }
   .form-group input { height:38px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 12px; font-size:14px; background:var(--bg); color:var(--text); font-family:var(--font); }
   .form-group input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 3px rgba(83,74,183,0.15); }
 
-  /* ── Info / Code ── */
-  .info-box { background:var(--blue-light); border-radius:var(--radius-md); border:0.5px solid rgba(24,95,165,0.3); padding:14px 16px; margin-bottom:1.5rem; font-size:13px; color:var(--blue-dark); line-height:1.8; }
-  .code-block { background:var(--bg-secondary); border-radius:var(--radius-md); border:0.5px solid var(--border); padding:12px 16px; font-family:var(--font-mono); font-size:12px; color:var(--text); white-space:pre-wrap; margin:10px 0; line-height:1.8; overflow-x:auto; }
-  .divider { margin:1.5rem 0; border:none; border-top:0.5px solid var(--border); }
-  .scroll-hint { font-size:11px; color:var(--text-tertiary); text-align:right; margin-top:6px; }
-  .pw-hint { font-size:12px; color:var(--text-tertiary); margin-top:4px; }
-
-  /* ── CSV drop ── */
-  .csv-drop { border:1.5px dashed var(--border-md); border-radius:var(--radius-md); padding:20px; text-align:center; cursor:pointer; transition:background .12s; }
-  .csv-drop:hover { background:var(--bg-secondary); }
-
-  /* ── Two col ── */
   .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
   @media(max-width:640px){ .two-col { grid-template-columns:1fr; } }
   .inner-box { border:0.5px solid var(--border); border-radius:var(--radius-md); padding:1rem; }
   .inner-title { font-size:13px; font-weight:600; margin-bottom:6px; }
   .inner-desc { font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.7; }
+
+  .csv-drop { border:1.5px dashed var(--border-md); border-radius:var(--radius-md); padding:20px; text-align:center; cursor:pointer; transition:background .12s; }
+  .csv-drop:hover { background:var(--bg-secondary); }
+
+  .fb-status { display:inline-flex; align-items:center; gap:5px; font-size:11px; }
+  .fb-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
+  .fb-dot.off { background:var(--red); }
+
+  .staff-wage-input { height:34px; width:110px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 10px; font-size:13px; background:var(--bg); color:var(--text); font-family:var(--font); text-align:right; }
+  .staff-wage-input:focus { outline:none; border-color:var(--purple); }
 </style>
 </head>
 <body>
 
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">接続中...</div>
+</div>
+
 <!-- LOGIN -->
-<div class="login-screen" id="login-screen">
+<div class="login-screen" id="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-icon">🔐</div>
     <div class="login-title">管理者ログイン</div>
@@ -186,33 +170,31 @@
 
 <!-- APP -->
 <div id="app" style="display:none">
-
 <header>
   <div class="logo">勤怠管理システム</div>
   <div class="header-badge">管理者</div>
   <div class="header-right">
+    <div class="fb-status"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">接続中</span></div>
     <span id="header-date"></span>
     <button class="btn" style="height:28px;font-size:12px;padding:0 12px" onclick="adminLogout()">ログアウト</button>
   </div>
 </header>
-
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('dashboard')">管理ダッシュボード</button>
   <button class="tab-btn" onclick="switchTab('records')">記録一覧</button>
   <button class="tab-btn" onclick="switchTab('staff')">スタッフ・時給管理</button>
-  <button class="tab-btn" onclick="switchTab('settings')">設定・GitHub連携</button>
+  <button class="tab-btn" onclick="switchTab('settings')">設定</button>
 </div>
-
 <div class="container">
 
-<!-- ═══════════════════════════ DASHBOARD ═══════════════════════════ -->
+<!-- DASHBOARD -->
 <div class="page active" id="tab-dashboard">
   <div class="card">
     <div class="filter-bar">
       <label>集計期間：</label>
       <input type="month" id="d-month" onchange="renderDashboard()">
       <button class="btn primary" onclick="renderDashboard()">集計する</button>
-      <div style="margin-left:auto;display:flex;gap:8px">
+      <div style="margin-left:auto">
         <button class="btn success" onclick="exportCSV()">CSVエクスポート</button>
       </div>
     </div>
@@ -221,15 +203,14 @@
       <div class="stat-card"><div class="stat-label">総実働時間</div><div class="stat-value">—</div></div>
       <div class="stat-card"><div class="stat-label">平均実働 / 日</div><div class="stat-value">—</div></div>
       <div class="stat-card"><div class="stat-label">記録スタッフ数</div><div class="stat-value">—</div></div>
-      <div class="stat-card highlight"><div class="stat-label">総給与合計</div><div class="stat-value" id="global-salary">—</div></div>
+      <div class="stat-card highlight"><div class="stat-label">総給与合計</div><div class="stat-value">—</div></div>
     </div>
   </div>
-
   <div class="section-title" style="font-size:15px;margin-top:.5rem">スタッフ別サマリー</div>
   <div id="person-cards"><div class="empty">上で「集計する」を押してください</div></div>
 </div>
 
-<!-- ═══════════════════════════ RECORDS ═══════════════════════════ -->
+<!-- RECORDS -->
 <div class="page" id="tab-records">
   <div class="card">
     <div class="filter-bar">
@@ -242,9 +223,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr><th>日付</th><th>氏名</th><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>時給</th><th>給与</th><th>備考</th><th></th></tr>
-        </thead>
+        <thead><tr><th>日付</th><th>氏名</th><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>時給</th><th>給与</th><th>備考</th><th></th></tr></thead>
         <tbody id="records-body"><tr><td colspan="10"><div class="empty">記録がありません</div></td></tr></tbody>
       </table>
     </div>
@@ -252,13 +231,11 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════ STAFF MANAGEMENT ═══════════════════════════ -->
+<!-- STAFF -->
 <div class="page" id="tab-staff">
   <div class="card">
     <div class="section-title">スタッフ登録・時給設定</div>
     <div id="staff-msg" class="msg"></div>
-
-    <!-- 新規追加 -->
     <div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:600;margin-bottom:12px">新規スタッフを追加</div>
       <div style="display:grid;grid-template-columns:1fr 160px auto;gap:10px;align-items:end">
@@ -277,87 +254,68 @@
         <button class="btn primary" onclick="addStaff()" style="height:38px">追加</button>
       </div>
     </div>
-
-    <!-- スタッフ一覧 -->
     <div style="font-size:13px;font-weight:600;margin-bottom:10px">登録スタッフ一覧</div>
-    <div style="display:grid;grid-template-columns:40px 1fr 180px 100px auto;gap:0;background:var(--bg-secondary);border-radius:var(--radius-md) var(--radius-md) 0 0;border:0.5px solid var(--border)">
+    <div style="display:grid;grid-template-columns:40px 1fr 180px 100px auto;background:var(--bg-secondary);border-radius:var(--radius-md) var(--radius-md) 0 0;border:0.5px solid var(--border)">
       <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500"></div>
       <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500">氏名</div>
       <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500">時給（円）</div>
-      <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500;text-align:center">プルダウン</div>
+      <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500;text-align:center">表示</div>
       <div style="padding:8px 12px;font-size:11px;color:var(--text-secondary);font-weight:500"></div>
     </div>
-    <ul class="staff-list" id="staff-list" style="border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md);"></ul>
+    <ul id="staff-list" style="list-style:none;border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md)"></ul>
     <div id="staff-empty" class="empty" style="display:none;border:0.5px solid var(--border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md)">スタッフが登録されていません</div>
-    <div style="margin-top:12px;font-size:12px;color:var(--text-secondary)">
-      ※ 時給を変更したら「保存」を押してください。プルダウンをオフにするとスタッフ画面の選択肢から非表示になります。
-    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--text-secondary)">※ 時給変更後は「保存」を押してください。表示をオフにするとスタッフ画面から非表示になります。</div>
   </div>
 </div>
 
-<!-- ═══════════════════════════ SETTINGS ═══════════════════════════ -->
+<!-- SETTINGS -->
 <div class="page" id="tab-settings">
-
   <!-- パスワード変更 -->
   <div class="card">
     <div class="section-title">管理者パスワード変更</div>
     <div id="pw-msg" class="msg"></div>
     <div style="max-width:360px">
-      <div class="form-group"><label>現在のパスワード</label><input type="password" id="pw-current" placeholder="現在のパスワード"></div>
-      <div class="form-group"><label>新しいパスワード</label><input type="password" id="pw-new" placeholder="8文字以上推奨"></div>
-      <div class="form-group"><label>新しいパスワード（確認）</label><input type="password" id="pw-confirm" placeholder="もう一度入力"></div>
+      <div class="form-group"><label>現在のパスワード</label><input type="password" id="pw-current"></div>
+      <div class="form-group"><label>新しいパスワード</label><input type="password" id="pw-new" placeholder="4文字以上"></div>
+      <div class="form-group"><label>新しいパスワード（確認）</label><input type="password" id="pw-confirm"></div>
       <button class="btn primary" onclick="changePassword()">パスワードを変更</button>
     </div>
   </div>
 
-  <!-- CSV import/export -->
+  <!-- CSV -->
   <div class="card">
     <div class="section-title">CSVインポート / エクスポート</div>
     <div id="csv-msg" class="msg"></div>
     <div class="two-col">
-
-      <!-- エクスポート -->
       <div class="inner-box">
         <div class="inner-title">CSVエクスポート</div>
-        <div class="inner-desc">現在のデータをCSVで書き出します。<br>月・氏名で絞り込み可能です。</div>
+        <div class="inner-desc">月・氏名で絞り込んで書き出せます。</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:48px">月：</label>
+            <label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:40px">月：</label>
             <input type="month" id="export-month" style="flex:1;height:34px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 10px;font-size:13px;background:var(--bg);color:var(--text);font-family:var(--font)">
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:48px">氏名：</label>
-            <select id="export-name" style="flex:1;height:34px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 10px;font-size:13px;background:var(--bg);color:var(--text);font-family:var(--font)">
-              <option value="">全員</option>
-            </select>
+            <label style="font-size:12px;color:var(--text-secondary);white-space:nowrap;min-width:40px">氏名：</label>
+            <select id="export-name" style="flex:1;height:34px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);padding:0 10px;font-size:13px;background:var(--bg);color:var(--text);font-family:var(--font)"><option value="">全員</option></select>
           </div>
           <button class="btn success" onclick="exportCSVFromSettings()" style="width:100%;justify-content:center">CSVエクスポート</button>
         </div>
         <hr class="divider" style="margin:12px 0">
-        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7">
-          列：日付 / 氏名 / 出勤 / 退勤 / 休憩(分) / 実働(h) / 時給 / 給与 / 備考
-        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7">列：日付 / 氏名 / 出勤 / 退勤 / 休憩(分) / 実働(h) / 時給 / 給与 / 備考</div>
       </div>
-
-      <!-- インポート -->
       <div class="inner-box">
         <div class="inner-title">CSVインポート</div>
-        <div class="inner-desc">CSVから記録を追加します。<br>既存データに追記（重複スキップ）。</div>
-        <div class="csv-drop" id="csv-drop-zone"
-          onclick="document.getElementById('import-csv-file').click()"
-          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <div class="inner-desc">CSVから記録を追加します。重複はスキップされます。</div>
+        <div class="csv-drop" id="csv-drop-zone" onclick="document.getElementById('import-csv-file').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
           <div style="font-size:28px;margin-bottom:6px">📂</div>
           <div style="font-size:12px;color:var(--text-secondary)">クリックまたはCSVをドロップ</div>
         </div>
         <input type="file" id="import-csv-file" accept=".csv" style="display:none" onchange="handleCSVImport(event)">
         <hr class="divider" style="margin:12px 0">
-        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7">
-          必須列：日付(YYYY-MM-DD) / 氏名 / 出勤時間(HH:MM) / 退勤時間(HH:MM)<br>
-          任意列：休憩時間(分) / 備考
-        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);line-height:1.7">必須列：日付(YYYY-MM-DD) / 氏名 / 出勤時間(HH:MM) / 退勤時間(HH:MM)</div>
       </div>
     </div>
-
     <!-- CSV preview -->
     <div id="csv-preview-area" style="display:none;margin-top:1rem">
       <hr class="divider" style="margin:0 0 1rem">
@@ -377,208 +335,258 @@
       </div>
     </div>
   </div>
-
-  <!-- GitHub -->
-  <div class="card">
-    <div class="section-title">GitHubでデータを管理する</div>
-    <div class="info-box">
-      <strong>このシステムはブラウザのLocalStorageにデータを保存しています。</strong><br>
-      GitHubリポジトリで管理・バックアップするには、JSONエクスポートしてコミットしてください。
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
-      <button class="btn success" onclick="exportJSON()">JSONエクスポート（GitHub保存用）</button>
-      <button class="btn" onclick="document.getElementById('import-json-file').click()">JSONインポート</button>
-    </div>
-    <input type="file" id="import-json-file" accept=".json" style="display:none" onchange="handleJSONImport(event)">
-    <hr class="divider">
-    <div style="font-size:13px;font-weight:500;margin-bottom:8px">GitHub Pages 公開手順</div>
-    <div class="code-block">1. GitHubで新しいリポジトリを作成（例：work-hours-system）
-2. index.html と admin.html を両方コミット
-3. エクスポートしたJSONを「data/records.json」としてコミット
-4. Settings → Pages → Source: main branch → Save
-5. https://ユーザー名.github.io/work-hours-system/
-   スタッフ：/index.html　管理者：/admin.html</div>
-    <hr class="divider">
-    <div style="font-size:13px;font-weight:500;margin-bottom:8px">現在のデータプレビュー</div>
-    <div class="code-block" id="json-preview">{ "staff": [], "records": [] }</div>
-  </div>
 </div>
 
 </div><!-- /container -->
 </div><!-- /app -->
 
-<script>
-// ══════════════════════════════════════════════
-//  Storage
-// ══════════════════════════════════════════════
-function getData() {
-  try { return JSON.parse(localStorage.getItem('work_hours_v2') || '{"staff":[],"records":[]}'); }
-  catch(e) { return { staff:[], records:[] }; }
-}
-function setData(d) { localStorage.setItem('work_hours_v2', JSON.stringify(d)); }
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, getDocs, deleteDoc,
+  query, where, orderBy, setDoc, getDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// staff entry shape: { name, wage, active }
-function getStaffList() {
-  const d = getData();
-  if (!Array.isArray(d.staff)) return [];
-  // migrate old string-only staff
-  return d.staff.map(s => typeof s === 'string' ? { name:s, wage:0, active:true } : s);
-}
-function saveStaffList(list) {
-  const d = getData();
-  d.staff = list;
-  setData(d);
+const firebaseConfig = {
+  apiKey: "AIzaSyCp6SMs3WkvV-wc6KT-hDVVppfWNjRIvAQ",
+  authDomain: "zigyou-kintai.firebaseapp.com",
+  projectId: "zigyou-kintai",
+  storageBucket: "zigyou-kintai.firebasestorage.app",
+  messagingSenderId: "236596465936",
+  appId: "1:236596465936:web:c128c1bdeb27eaffb91595"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── State ──
+let staffCache   = [];  // [{docId, name, wage, active}]
+let recordsCache = [];  // [{docId, name, date, start, end, break, work, note}]
+
+// ── Status ──
+function setFbStatus(ok) {
+  const dot=document.getElementById('fb-dot'),text=document.getElementById('fb-status-text');
+  if(!dot)return;
+  dot.className='fb-dot'+(ok?'':' off');
+  text.textContent=ok?'接続中':'オフライン';
 }
 
-function getAdminPw() { return localStorage.getItem('admin_pw') || 'admin1234'; }
-function setAdminPw(pw) { localStorage.setItem('admin_pw', pw); }
+// ── Boot ──
+async function boot() {
+  try {
+    await getDocs(collection(db,'staff'));
+    setFbStatus(true);
+  } catch(e){ setFbStatus(false); }
+  document.getElementById('loading-overlay').style.display='none';
+  if(sessionStorage.getItem('admin_auth')==='1') showAdminApp();
+  else document.getElementById('login-screen').style.display='flex';
+}
+boot();
 
-// ══════════════════════════════════════════════
-//  Auth
-// ══════════════════════════════════════════════
-function adminLogin() {
-  const pw  = document.getElementById('login-pw').value;
-  const msg = document.getElementById('login-msg');
-  if (!pw) { showMsg(msg,'error','パスワードを入力してください。'); return; }
-  if (pw !== getAdminPw()) { showMsg(msg,'error','パスワードが正しくありません。'); return; }
+// ── Auth ──
+function getAdminPw(){ return localStorage.getItem('admin_pw')||'admin1234'; }
+function setAdminPw(pw){ localStorage.setItem('admin_pw',pw); }
+
+window.adminLogin = () => {
+  const pw=document.getElementById('login-pw').value;
+  const msg=document.getElementById('login-msg');
+  if(!pw){showMsg(msg,'error','パスワードを入力してください。');return;}
+  if(pw!==getAdminPw()){showMsg(msg,'error','パスワードが正しくありません。');return;}
   sessionStorage.setItem('admin_auth','1');
   showAdminApp();
-}
-function adminLogout() {
+};
+window.adminLogout = () => {
   sessionStorage.removeItem('admin_auth');
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-pw').value='';
-}
-function showAdminApp() {
+};
+
+async function showAdminApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('header-date').textContent =
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('header-date').textContent=
     new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-  document.getElementById('d-month').value = today.slice(0,7);
-  document.getElementById('r-month-filter').value = today.slice(0,7);
-  migrateStaff();
-  populateNameFilter();
-  populateExportNameFilter();
-  updateJsonPreview();
+  document.getElementById('d-month').value=today.slice(0,7);
+  document.getElementById('r-month-filter').value=today.slice(0,7);
+  await loadStaff();
   renderDashboard();
 }
 
-// migrate plain string staff to object format
-function migrateStaff() {
-  const d = getData();
-  if (Array.isArray(d.staff) && d.staff.some(s=>typeof s==='string')) {
-    d.staff = d.staff.map(s => typeof s==='string' ? {name:s,wage:0,active:true} : s);
-    setData(d);
-  }
-  // ensure sample staff on first run
-  if (!Array.isArray(d.staff) || d.staff.length===0) {
-    d.staff = [
-      {name:'田中 太郎', wage:1200, active:true},
-      {name:'鈴木 花子', wage:1100, active:true},
-      {name:'山田 次郎', wage:1300, active:true},
-    ];
-    setData(d);
-  }
-}
-
-function changePassword() {
-  const cur  = document.getElementById('pw-current').value;
-  const nw   = document.getElementById('pw-new').value;
-  const conf = document.getElementById('pw-confirm').value;
-  const msg  = document.getElementById('pw-msg');
-  if (cur !== getAdminPw()) { showMsg(msg,'error','現在のパスワードが正しくありません。'); return; }
-  if (!nw||nw.length<4)    { showMsg(msg,'error','新しいパスワードは4文字以上にしてください。'); return; }
-  if (nw !== conf)          { showMsg(msg,'error','新しいパスワードが一致しません。'); return; }
+window.changePassword = () => {
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const conf=document.getElementById('pw-confirm').value;
+  const msg=document.getElementById('pw-msg');
+  if(cur!==getAdminPw()){showMsg(msg,'error','現在のパスワードが正しくありません。');return;}
+  if(!nw||nw.length<4){showMsg(msg,'error','新しいパスワードは4文字以上にしてください。');return;}
+  if(nw!==conf){showMsg(msg,'error','新しいパスワードが一致しません。');return;}
   setAdminPw(nw);
   ['pw-current','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value='');
   showMsg(msg,'success','パスワードを変更しました。');
+};
+
+// ── Utilities ──
+function timeToMin(t){if(!t)return 0;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function minToH(m){return(m/60).toFixed(2);}
+function fmtYen(v){return '¥'+Math.round(v).toLocaleString();}
+function initials(n){return(n||'').split(' ').map(s=>s[0]||'').join('').slice(0,2).toUpperCase();}
+function getWage(name){const s=staffCache.find(s=>s.name===name);return s?(s.wage||0):0;}
+function calcSalary(work,wage){return Math.round((work/60)*wage);}
+
+function showMsg(el,type,text){
+  el.className='msg '+type;el.textContent=text;el.style.display='block';
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display='none';},4500);
 }
 
-// ══════════════════════════════════════════════
-//  Utilities
-// ══════════════════════════════════════════════
-function timeToMin(t) { if(!t) return 0; const [h,m]=t.split(':').map(Number); return h*60+m; }
-function minToH(m) { return (m/60).toFixed(2); }
-function initials(n) { return (n||'').split(' ').map(s=>s[0]||'').join('').slice(0,2).toUpperCase(); }
-function fmtYen(v) { return '¥' + Math.round(v).toLocaleString(); }
-
-function getWage(name) {
-  const staff = getStaffList().find(s=>s.name===name);
-  return staff ? (staff.wage||0) : 0;
-}
-
-function calcSalary(work, wage) {
-  // work is in minutes; wage is hourly
-  return Math.round((work / 60) * wage);
-}
-
-function switchTab(tab) {
+window.switchTab = async (tab) => {
   const tabs=['dashboard','records','staff','settings'];
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===tab));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
-  if(tab==='records') renderRecords();
-  if(tab==='staff')   renderStaffList();
-  if(tab==='settings'){ populateNameFilter(); populateExportNameFilter(); updateJsonPreview(); }
+  if(tab==='records'){await loadRecords();renderRecords();}
+  if(tab==='staff'){await loadStaff();renderStaffList();}
+  if(tab==='settings'){await loadStaff();populateExportNameFilter();}
+};
+
+// ── Staff ──
+async function loadStaff(){
+  try{
+    const snap=await getDocs(collection(db,'staff'));
+    staffCache=snap.docs.map(d=>({...d.data(),docId:d.id}));
+    populateNameFilter();
+    populateExportNameFilter();
+  }catch(e){console.error(e);}
 }
 
-function showMsg(el, type, text) {
-  el.className='msg '+type; el.textContent=text; el.style.display='block';
-  clearTimeout(el._t); el._t=setTimeout(()=>{el.style.display='none';},4500);
+function renderStaffList(){
+  const ul=document.getElementById('staff-list');
+  const emp=document.getElementById('staff-empty');
+  if(!staffCache.length){ul.innerHTML='';emp.style.display='block';return;}
+  emp.style.display='none';
+  ul.innerHTML=staffCache.map((s,i)=>
+    '<li style="display:grid;grid-template-columns:40px 1fr 180px 100px auto;align-items:center;padding:10px 12px;border-bottom:0.5px solid var(--border)">'+
+    '<div class="avatar" style="width:32px;height:32px;font-size:11px">'+initials(s.name)+'</div>'+
+    '<div style="font-size:14px;padding:0 8px">'+s.name+'</div>'+
+    '<div style="display:flex;align-items:center;gap:6px">'+
+      '<span style="font-size:12px;color:var(--text-secondary)">¥</span>'+
+      '<input type="number" class="staff-wage-input" id="wage-'+i+'" value="'+(s.wage||'')+'" placeholder="未設定" min="0" step="50">'+
+    '</div>'+
+    '<div style="text-align:center">'+
+      '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary)">'+
+        '<input type="checkbox" id="active-'+i+'" '+(s.active!==false?'checked':'')+' style="width:14px;height:14px">表示中'+
+      '</label>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px">'+
+      '<button class="btn success" style="height:28px;padding:0 12px;font-size:11px" onclick="saveStaff('+i+')">保存</button>'+
+      '<button class="btn danger"  style="height:28px;padding:0 10px;font-size:11px" onclick="removeStaff('+i+')">削除</button>'+
+    '</div></li>'
+  ).join('');
 }
 
-// ══════════════════════════════════════════════
-//  Dashboard
-// ══════════════════════════════════════════════
-function renderDashboard() {
-  const month = document.getElementById('d-month').value;
-  const d = getData();
-  const recs = month ? d.records.filter(r=>r.date.startsWith(month)) : d.records;
+window.addStaff = async () => {
+  const name=document.getElementById('new-staff-name').value.trim();
+  const wage=parseInt(document.getElementById('new-staff-wage').value)||0;
+  const msg=document.getElementById('staff-msg');
+  if(!name){showMsg(msg,'error','氏名を入力してください。');return;}
+  if(staffCache.find(s=>s.name===name)){showMsg(msg,'error','同じ名前がすでに登録されています。');return;}
+  try{
+    await addDoc(collection(db,'staff'),{name,wage,active:true});
+    document.getElementById('new-staff-name').value='';
+    document.getElementById('new-staff-wage').value='';
+    await loadStaff();
+    renderStaffList();
+    showMsg(msg,'success',name+'さんを登録しました（時給 '+fmtYen(wage)+'）');
+  }catch(e){showMsg(msg,'error','登録に失敗しました。');}
+};
 
-  const totalDays  = new Set(recs.map(r=>r.date)).size;
-  const totalWork  = recs.reduce((s,r)=>s+r.work,0);
-  const people     = [...new Set(recs.map(r=>r.name))];
-  const avgWork    = recs.length ? Math.round(totalWork/recs.length) : 0;
-  const totalSal   = recs.reduce((s,r)=>s+calcSalary(r.work,getWage(r.name)),0);
+window.saveStaff = async (i) => {
+  const wage=parseInt(document.getElementById('wage-'+i).value)||0;
+  const active=document.getElementById('active-'+i).checked;
+  const s=staffCache[i];
+  const msg=document.getElementById('staff-msg');
+  try{
+    await setDoc(doc(db,'staff',s.docId),{name:s.name,wage,active});
+    await loadStaff();
+    renderStaffList();
+    showMsg(msg,'success',s.name+'さんの情報を保存しました（時給 '+fmtYen(wage)+'）');
+  }catch(e){showMsg(msg,'error','保存に失敗しました。');}
+};
 
-  document.getElementById('global-stats').innerHTML = [
-    ['出勤日数（延べ）', totalDays+'日', month?month:' 全期間'],
-    ['総実働時間', minToH(totalWork)+'h', Math.floor(totalWork/60)+'時間'+(totalWork%60)+'分'],
-    ['平均実働 / 日', recs.length?minToH(avgWork)+'h':'—', recs.length+'件の記録'],
-    ['記録スタッフ数', people.length+'人', ''],
-  ].map(([l,v,s])=>
-    '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value">'+v+'</div><div class="stat-sub">'+s+'</div></div>'
-  ).join('') +
-  '<div class="stat-card highlight"><div class="stat-label">総給与合計</div><div class="stat-value">'+fmtYen(totalSal)+'</div><div class="stat-sub">時給ありのスタッフ合計</div></div>';
+window.removeStaff = async (i) => {
+  const s=staffCache[i];
+  if(!confirm(s.name+' を削除しますか？（記録データは残ります）'))return;
+  try{
+    await deleteDoc(doc(db,'staff',s.docId));
+    await loadStaff();
+    renderStaffList();
+  }catch(e){alert('削除に失敗しました。');}
+};
 
-  const cards = document.getElementById('person-cards');
-  if (!people.length) { cards.innerHTML='<div class="empty">この期間の記録がありません</div>'; return; }
+function populateNameFilter(){
+  const names=[...new Set(recordsCache.map(r=>r.name))];
+  const sel=document.getElementById('r-name-filter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">全員</option>';
+  names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===cur)o.selected=true;sel.appendChild(o);});
+}
 
-  cards.innerHTML = people.map(name => {
-    const pr    = recs.filter(r=>r.name===name);
-    const days  = new Set(pr.map(r=>r.date)).size;
-    const work  = pr.reduce((s,r)=>s+r.work,0);
-    const brk   = pr.reduce((s,r)=>s+r.break,0);
-    const avg   = days ? minToH(Math.round(work/days)) : '—';
-    const wage  = getWage(name);
-    const sal   = calcSalary(work, wage);
-    const ini   = initials(name);
-    const recent = pr.slice(-5).reverse();
+function populateExportNameFilter(){
+  const names=staffCache.map(s=>s.name);
+  const sel=document.getElementById('export-name');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">全員</option>';
+  names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===cur)o.selected=true;sel.appendChild(o);});
+}
 
-    const rows = recent.map(r => {
-      const rWage = getWage(r.name);
-      const rSal  = rWage ? calcSalary(r.work, rWage) : null;
-      return '<tr>'+
-        '<td>'+r.date+'</td>'+
-        '<td>'+r.start+' 〜 '+r.end+'</td>'+
-        '<td>'+r.break+'分</td>'+
+// ── Records ──
+async function loadRecords(){
+  try{
+    const snap=await getDocs(query(collection(db,'records'),orderBy('date','asc')));
+    recordsCache=snap.docs.map(d=>({...d.data(),docId:d.id}));
+    populateNameFilter();
+  }catch(e){console.error(e);}
+}
+
+// ── Dashboard ──
+window.renderDashboard = async () => {
+  const month=document.getElementById('d-month').value;
+  await loadRecords();
+  const recs=month?recordsCache.filter(r=>r.date.startsWith(month)):recordsCache;
+
+  const totalDays=new Set(recs.map(r=>r.date)).size;
+  const totalWork=recs.reduce((s,r)=>s+r.work,0);
+  const people=[...new Set(recs.map(r=>r.name))];
+  const avgWork=recs.length?Math.round(totalWork/recs.length):0;
+  const totalSal=recs.reduce((s,r)=>s+calcSalary(r.work,getWage(r.name)),0);
+
+  document.getElementById('global-stats').innerHTML=[
+    ['出勤日数（延べ）',totalDays+'日',month||'全期間'],
+    ['総実働時間',minToH(totalWork)+'h',Math.floor(totalWork/60)+'時間'+(totalWork%60)+'分'],
+    ['平均実働 / 日',recs.length?minToH(avgWork)+'h':'—',recs.length+'件の記録'],
+    ['記録スタッフ数',people.length+'人',''],
+  ].map(([l,v,s])=>'<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value">'+v+'</div><div class="stat-sub">'+s+'</div></div>').join('')+
+  '<div class="stat-card highlight"><div class="stat-label">総給与合計</div><div class="stat-value">'+fmtYen(totalSal)+'</div><div class="stat-sub">時給設定ありのみ</div></div>';
+
+  const cards=document.getElementById('person-cards');
+  if(!people.length){cards.innerHTML='<div class="empty">この期間の記録がありません</div>';return;}
+  cards.innerHTML=people.map(name=>{
+    const pr=recs.filter(r=>r.name===name);
+    const days=new Set(pr.map(r=>r.date)).size;
+    const work=pr.reduce((s,r)=>s+r.work,0);
+    const brk=pr.reduce((s,r)=>s+r.break,0);
+    const avg=days?minToH(Math.round(work/days)):'—';
+    const wage=getWage(name);
+    const sal=calcSalary(work,wage);
+    const ini=initials(name);
+    const rows=pr.slice(-5).reverse().map(r=>{
+      const rWage=getWage(r.name);
+      const rSal=rWage?calcSalary(r.work,rWage):null;
+      return '<tr><td>'+r.date+'</td><td>'+r.start+' 〜 '+r.end+'</td><td>'+r.break+'分</td>'+
         '<td><span class="badge green">'+minToH(r.work)+'h</span></td>'+
-        (rSal!==null ? '<td><span class="badge purple">'+fmtYen(rSal)+'</span></td>' : '<td style="color:var(--text-tertiary)">—</td>')+
-        '<td style="color:var(--text-secondary);font-size:12px">'+(r.note||'')+'</td>'+
-        '</tr>';
+        (rSal!==null?'<td><span class="badge purple">'+fmtYen(rSal)+'</span></td>':'<td style="color:var(--text-tertiary)">—</td>')+
+        '<td style="color:var(--text-secondary);font-size:12px">'+(r.note||'')+'</td></tr>';
     }).join('');
-
     return '<div class="person-card">'+
       '<div class="person-card-header">'+
         '<div class="avatar">'+ini+'</div>'+
@@ -586,274 +594,130 @@ function renderDashboard() {
         '<div class="person-stats">'+
           '<span class="badge blue">'+days+'日出勤</span>'+
           '<span class="badge green">'+minToH(work)+'h実働</span>'+
-          '<span class="badge amber">休憩'+Math.round(brk/60*10)/10+'h</span>'+
-          (wage ? '<span class="salary-badge">'+fmtYen(sal)+'<span style="font-size:10px;opacity:.7;margin-left:2px">給与合計</span></span>' : '<span class="wage-tag">時給未設定</span>')+
-          '<span class="person-avg">日平均'+avg+'h</span>'+
-          (wage ? '<span style="font-size:11px;color:var(--text-secondary)">時給 '+fmtYen(wage)+'</span>' : '')+
+          '<span class="badge amber">休憩 '+Math.round(brk/60*10)/10+'h</span>'+
+          (wage?'<span class="salary-badge">'+fmtYen(sal)+'<span style="font-size:10px;opacity:.7;margin-left:2px">給与合計</span></span>':'<span class="wage-tag">時給未設定</span>')+
+          '<span class="person-avg">日平均 '+avg+'h</span>'+
+          (wage?'<span style="font-size:11px;color:var(--text-secondary)">時給 '+fmtYen(wage)+'</span>':'')+
         '</div>'+
       '</div>'+
-      (rows ? '<div class="person-card-body">'+
+      (rows?'<div class="person-card-body">'+
         '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">最近の記録（最大5件）</div>'+
         '<div class="table-wrap"><table><thead><tr><th>日付</th><th>時間</th><th>休憩</th><th>実働</th><th>給与</th><th>備考</th></tr></thead>'+
-        '<tbody>'+rows+'</tbody></table></div></div>' : '')+
+        '<tbody>'+rows+'</tbody></table></div></div>':'')+
       '</div>';
   }).join('');
-}
+};
 
-// ══════════════════════════════════════════════
-//  Records
-// ══════════════════════════════════════════════
-function populateNameFilter() {
-  const d = getData();
-  const names = [...new Set(d.records.map(r=>r.name))];
-  const sel = document.getElementById('r-name-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">全員</option>';
-  names.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; if(n===cur)o.selected=true; sel.appendChild(o); });
-}
-
-function renderRecords() {
-  const nameF  = document.getElementById('r-name-filter').value;
-  const monthF = document.getElementById('r-month-filter').value;
-  let recs = [...getData().records].reverse();
-  if (nameF)  recs = recs.filter(r=>r.name===nameF);
-  if (monthF) recs = recs.filter(r=>r.date.startsWith(monthF));
-
-  const body  = document.getElementById('records-body');
-  const count = document.getElementById('records-count');
-
-  if (!recs.length) {
+// ── Records list ──
+window.renderRecords = () => {
+  const nameF=document.getElementById('r-name-filter').value;
+  const monthF=document.getElementById('r-month-filter').value;
+  let recs=[...recordsCache].reverse();
+  if(nameF) recs=recs.filter(r=>r.name===nameF);
+  if(monthF) recs=recs.filter(r=>r.date.startsWith(monthF));
+  const body=document.getElementById('records-body');
+  const count=document.getElementById('records-count');
+  if(!recs.length){
     body.innerHTML='<tr><td colspan="10"><div class="empty">条件に一致する記録がありません</div></td></tr>';
-    count.textContent=''; return;
+    count.textContent='';return;
   }
-
-  body.innerHTML = recs.map(r => {
-    const wage = getWage(r.name);
-    const sal  = wage ? calcSalary(r.work, wage) : null;
-    return '<tr>'+
-      '<td>'+r.date+'</td>'+
-      '<td>'+r.name+'</td>'+
-      '<td>'+r.start+'</td>'+
-      '<td>'+r.end+'</td>'+
+  body.innerHTML=recs.map(r=>{
+    const wage=getWage(r.name);
+    const sal=wage?calcSalary(r.work,wage):null;
+    return '<tr><td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.start+'</td><td>'+r.end+'</td>'+
       '<td style="text-align:right">'+r.break+'</td>'+
       '<td><span class="badge green">'+minToH(r.work)+'h</span></td>'+
       '<td style="text-align:right;color:var(--text-secondary)">'+(wage?fmtYen(wage):'—')+'</td>'+
       '<td>'+(sal!==null?'<span class="badge purple">'+fmtYen(sal)+'</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'+
       '<td style="color:var(--text-secondary)">'+(r.note||'')+'</td>'+
-      '<td><button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteRecord('+r.id+')">削除</button></td>'+
-      '</tr>';
+      '<td><button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteRecord(\''+r.docId+'\')">削除</button></td></tr>';
   }).join('');
-  count.textContent = recs.length + ' 件表示中';
-}
+  count.textContent=recs.length+' 件表示中';
+};
 
-function deleteRecord(id) {
-  if (!confirm('この記録を削除しますか？')) return;
-  const d = getData();
-  d.records = d.records.filter(r=>r.id!==id);
-  setData(d);
-  renderRecords();
-  updateJsonPreview();
-}
-function clearAll() {
-  if (!confirm('全件削除しますか？この操作は取り消せません。')) return;
-  const d = getData();
-  d.records = [];
-  setData(d);
-  renderRecords();
-  updateJsonPreview();
-}
+window.deleteRecord = async (docId) => {
+  if(!confirm('この記録を削除しますか？'))return;
+  try{
+    await deleteDoc(doc(db,'records',docId));
+    await loadRecords();
+    renderRecords();
+  }catch(e){alert('削除に失敗しました。');}
+};
 
-// ══════════════════════════════════════════════
-//  Staff management
-// ══════════════════════════════════════════════
-function renderStaffList() {
-  const list = getStaffList();
-  const ul   = document.getElementById('staff-list');
-  const emp  = document.getElementById('staff-empty');
+window.clearAll = async () => {
+  if(!confirm('全件削除しますか？この操作は取り消せません。'))return;
+  try{
+    const batch=writeBatch(db);
+    recordsCache.forEach(r=>batch.delete(doc(db,'records',r.docId)));
+    await batch.commit();
+    await loadRecords();
+    renderRecords();
+  }catch(e){alert('削除に失敗しました。');}
+};
 
-  if (!list.length) {
-    ul.innerHTML=''; emp.style.display='block'; return;
-  }
-  emp.style.display='none';
-
-  ul.innerHTML = list.map((s,i) => {
-    const ini = initials(s.name);
-    const checked = s.active !== false ? 'checked' : '';
-    return '<li style="display:grid;grid-template-columns:40px 1fr 180px 100px auto;gap:0;align-items:center;padding:10px 0 10px 12px;border-bottom:0.5px solid var(--border)">'+
-      '<div class="avatar" style="width:32px;height:32px;font-size:11px">'+ini+'</div>'+
-      '<div style="font-size:14px;padding:0 8px">'+s.name+'</div>'+
-      '<div style="display:flex;align-items:center;gap:6px">'+
-        '<span style="font-size:12px;color:var(--text-secondary)">¥</span>'+
-        '<input type="number" class="staff-wage-input" id="wage-'+i+'" value="'+(s.wage||'')+'" placeholder="未設定" min="0" step="50">'+
-      '</div>'+
-      '<div style="text-align:center">'+
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary)">'+
-          '<input type="checkbox" id="active-'+i+'" '+checked+' style="width:14px;height:14px;cursor:pointer">'+
-          '表示中'+
-        '</label>'+
-      '</div>'+
-      '<div style="display:flex;gap:6px;padding-right:12px">'+
-        '<button class="btn success" style="height:28px;padding:0 12px;font-size:11px" onclick="saveStaff('+i+')">保存</button>'+
-        '<button class="btn danger"  style="height:28px;padding:0 10px;font-size:11px" onclick="removeStaff('+i+')">削除</button>'+
-      '</div>'+
-      '</li>';
-  }).join('');
-}
-
-function addStaff() {
-  const name = document.getElementById('new-staff-name').value.trim();
-  const wage = parseInt(document.getElementById('new-staff-wage').value) || 0;
-  const msg  = document.getElementById('staff-msg');
-  if (!name) { showMsg(msg,'error','氏名を入力してください。'); return; }
-  const list = getStaffList();
-  if (list.find(s=>s.name===name)) { showMsg(msg,'error','同じ名前がすでに登録されています。'); return; }
-  list.push({ name, wage, active:true });
-  saveStaffList(list);
-  document.getElementById('new-staff-name').value='';
-  document.getElementById('new-staff-wage').value='';
-  renderStaffList();
-  populateNameFilter();
-  populateExportNameFilter();
-  updateJsonPreview();
-  showMsg(msg,'success', name+'さんを登録しました。');
-}
-
-function saveStaff(i) {
-  const wage   = parseInt(document.getElementById('wage-'+i).value) || 0;
-  const active = document.getElementById('active-'+i).checked;
-  const list   = getStaffList();
-  list[i].wage   = wage;
-  list[i].active = active;
-  saveStaffList(list);
-  renderStaffList();
-  updateJsonPreview();
-  const msg = document.getElementById('staff-msg');
-  showMsg(msg,'success', list[i].name+'さんの情報を保存しました（時給 '+fmtYen(wage)+'）');
-}
-
-function removeStaff(i) {
-  const list = getStaffList();
-  if (!confirm(list[i].name+' を削除しますか？（記録データは残ります）')) return;
-  list.splice(i,1);
-  saveStaffList(list);
-  renderStaffList();
-  populateNameFilter();
-  populateExportNameFilter();
-  updateJsonPreview();
-}
-
-// ══════════════════════════════════════════════
-//  CSV export
-// ══════════════════════════════════════════════
-function exportCSV() {
-  const month = document.getElementById('d-month').value || '';
-  buildCSV(month,'');
-}
-function exportCSVFromSettings() {
-  buildCSV(
-    document.getElementById('export-month').value||'',
-    document.getElementById('export-name').value||''
-  );
-}
-function buildCSV(month, name) {
-  const d = getData();
-  let recs = d.records;
-  if (month) recs = recs.filter(r=>r.date.startsWith(month));
-  if (name)  recs = recs.filter(r=>r.name===name);
-  const header = '日付,氏名,出勤時間,退勤時間,休憩時間(分),実働時間(h),時給(円),給与(円),備考\n';
-  const rows = recs.map(r=>{
-    const wage = getWage(r.name);
-    const sal  = wage ? calcSalary(r.work,wage) : '';
-    const note = (r.note||'').replace(/,/g,'、');
-    return [r.date,r.name,r.start,r.end,r.break,minToH(r.work),wage||'',sal,note].join(',');
+// ── CSV Export ──
+window.exportCSV = async () => {
+  const month=document.getElementById('d-month').value||'';
+  await buildCSV(month,'');
+};
+window.exportCSVFromSettings = async () => {
+  await buildCSV(document.getElementById('export-month').value||'',document.getElementById('export-name').value||'');
+};
+async function buildCSV(month,name){
+  await loadRecords();
+  let recs=recordsCache;
+  if(month) recs=recs.filter(r=>r.date.startsWith(month));
+  if(name)  recs=recs.filter(r=>r.name===name);
+  const header='日付,氏名,出勤時間,退勤時間,休憩時間(分),実働時間(h),時給(円),給与(円),備考\n';
+  const rows=recs.map(r=>{
+    const wage=getWage(r.name);
+    const sal=wage?calcSalary(r.work,wage):'';
+    return [r.date,r.name,r.start,r.end,r.break,minToH(r.work),wage||'',sal,(r.note||'').replace(/,/g,'、')].join(',');
   }).join('\n');
   const label=[month,name].filter(Boolean).join('_')||'全期間';
   downloadBlob(new Blob(['\uFEFF'+header+rows],{type:'text/csv;charset=utf-8'}),'勤怠記録_'+label+'.csv');
 }
 
-function populateExportNameFilter() {
-  const names = getStaffList().map(s=>s.name);
-  const recNames = [...new Set(getData().records.map(r=>r.name))];
-  const all = [...new Set([...names,...recNames])];
-  const sel = document.getElementById('export-name');
-  if (!sel) return;
-  const cur = sel.value;
-  sel.innerHTML='<option value="">全員</option>';
-  all.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; if(n===cur)o.selected=true; sel.appendChild(o); });
-}
-
-// ══════════════════════════════════════════════
-//  CSV import
-// ══════════════════════════════════════════════
+// ── CSV Import ──
 let csvPendingRows=[];
+window.handleDragOver=(e)=>{e.preventDefault();document.getElementById('csv-drop-zone').style.background='var(--bg-secondary)';};
+window.handleDragLeave=()=>{document.getElementById('csv-drop-zone').style.background='';};
+window.handleDrop=(e)=>{e.preventDefault();document.getElementById('csv-drop-zone').style.background='';const f=e.dataTransfer.files[0];if(f)processCSVFile(f);};
+window.handleCSVImport=(e)=>{const f=e.target.files[0];if(f)processCSVFile(f);e.target.value='';};
 
-function handleDragOver(e) { e.preventDefault(); document.getElementById('csv-drop-zone').style.background='var(--bg-secondary)'; }
-function handleDragLeave()  { document.getElementById('csv-drop-zone').style.background=''; }
-function handleDrop(e)      { e.preventDefault(); document.getElementById('csv-drop-zone').style.background=''; const f=e.dataTransfer.files[0]; if(f) processCSVFile(f); }
-function handleCSVImport(e) { const f=e.target.files[0]; if(f) processCSVFile(f); e.target.value=''; }
-
-function processCSVFile(file) {
+function processCSVFile(file){
   const reader=new FileReader();
-  reader.onload=ev=>{ try{ parseAndPreviewCSV(ev.target.result); }catch(err){ showSettingsMsg('error','CSVの読み込みに失敗しました：'+err.message); } };
+  reader.onload=ev=>{try{parseAndPreviewCSV(ev.target.result);}catch(err){showSettingsMsg('error','CSVの読み込みに失敗しました。');}};
   reader.readAsText(file,'UTF-8');
 }
-
-function parseAndPreviewCSV(text) {
-  const cleaned=text.replace(/^\uFEFF/,'');
-  const lines=cleaned.split(/\r?\n/).filter(l=>l.trim());
-  if(lines.length<2){ showSettingsMsg('error','データ行がありません。'); return; }
-
-  const headerLine=lines[0].split(',').map(h=>h.trim());
-  function colIdx(candidates){ for(const c of candidates){ const i=headerLine.findIndex(h=>h.includes(c)); if(i>=0) return i; } return -1; }
-  const iDate=colIdx(['日付','date','Date']);
-  const iName=colIdx(['氏名','名前','name','Name']);
-  const iStart=colIdx(['出勤時間','出勤','start','Start']);
-  const iEnd=colIdx(['退勤時間','退勤','end','End']);
-  const iBreak=colIdx(['休憩時間','休憩','break','Break']);
-  const iNote=colIdx(['備考','note','Note','memo']);
-
-  if(iDate<0||iName<0||iStart<0||iEnd<0){
-    showSettingsMsg('error','必須列（日付・氏名・出勤時間・退勤時間）が見つかりません。');
-    return;
-  }
-
-  const existing=getData().records;
-  const existingKeys=new Set(existing.map(r=>r.name+'|'+r.date+'|'+r.start));
+function parseAndPreviewCSV(text){
+  const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2){showSettingsMsg('error','データ行がありません。');return;}
+  const h=lines[0].split(',').map(s=>s.trim());
+  const ci=cands=>cands.reduce((a,c)=>{if(a>=0)return a;const i=h.findIndex(x=>x.includes(c));return i;},-1);
+  const iDate=ci(['日付','date']),iName=ci(['氏名','名前','name']),iStart=ci(['出勤時間','出勤','start']),iEnd=ci(['退勤時間','退勤','end']),iBreak=ci(['休憩','break']),iNote=ci(['備考','note']);
+  if(iDate<0||iName<0||iStart<0||iEnd<0){showSettingsMsg('error','必須列が見つかりません（日付・氏名・出勤時間・退勤時間）');return;}
+  const existKeys=new Set(recordsCache.map(r=>r.name+'|'+r.date+'|'+r.start));
   csvPendingRows=[];
-  const previewRows=[];
-
+  const preview=[];
   for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(',').map(c=>c.trim());
-    const date=cols[iDate]||'', name=cols[iName]||'', start=cols[iStart]||'', end=cols[iEnd]||'';
-    const brk=parseInt(cols[iBreak])||0;
-    const note=iNote>=0?(cols[iNote]||''):'';
-
-    if(!date||!name||!start||!end){ previewRows.push({status:'error',reason:'必須項目が空',date,name,start,end,brk,note,work:null}); continue; }
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ previewRows.push({status:'error',reason:'日付形式エラー(YYYY-MM-DD)',date,name,start,end,brk,note,work:null}); continue; }
-    if(!/^\d{1,2}:\d{2}$/.test(start)||!/^\d{1,2}:\d{2}$/.test(end)){ previewRows.push({status:'error',reason:'時刻形式エラー(HH:MM)',date,name,start,end,brk,note,work:null}); continue; }
-
-    const key=name+'|'+date+'|'+start;
-    if(existingKeys.has(key)){ previewRows.push({status:'skip',reason:'重複',date,name,start,end,brk,note,work:null}); continue; }
-
+    const c=lines[i].split(',').map(s=>s.trim());
+    const date=c[iDate]||'',name=c[iName]||'',start=c[iStart]||'',end=c[iEnd]||'';
+    const brk=parseInt(c[iBreak])||0,note=iNote>=0?(c[iNote]||''):'';
+    if(!date||!name||!start||!end){preview.push({status:'error',reason:'必須項目が空',date,name,start,end,brk,note,work:null});continue;}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){preview.push({status:'error',reason:'日付形式エラー',date,name,start,end,brk,note,work:null});continue;}
+    if(!/^\d{1,2}:\d{2}$/.test(start)||!/^\d{1,2}:\d{2}$/.test(end)){preview.push({status:'error',reason:'時刻形式エラー',date,name,start,end,brk,note,work:null});continue;}
+    if(existKeys.has(name+'|'+date+'|'+start)){preview.push({status:'skip',reason:'重複',date,name,start,end,brk,note,work:null});continue;}
     const sMin=timeToMin(start),eMin=timeToMin(end);
-    if(eMin<=sMin){ previewRows.push({status:'error',reason:'退勤が出勤より前',date,name,start,end,brk,note,work:null}); continue; }
+    if(eMin<=sMin){preview.push({status:'error',reason:'退勤が出勤より前',date,name,start,end,brk,note,work:null});continue;}
     const work=Math.max(0,eMin-sMin-brk);
-    previewRows.push({status:'ok',date,name,start,end,brk,note,work});
-    csvPendingRows.push({id:Date.now()+i,name,date,start,end,break:brk,work,note});
+    preview.push({status:'ok',date,name,start,end,brk,note,work});
+    csvPendingRows.push({name,date,start,end,break:brk,work,note,createdAt:Date.now()});
   }
-  renderCSVPreview(previewRows);
-}
-
-function renderCSVPreview(rows) {
-  const ok=rows.filter(r=>r.status==='ok').length;
-  const skip=rows.filter(r=>r.status==='skip').length;
-  const err=rows.filter(r=>r.status==='error').length;
-  document.getElementById('csv-preview-stats').innerHTML=[
-    ['追加予定',ok+'件','green'],['スキップ（重複）',skip+'件','amber'],['エラー',err+'件',err?'red':'blue'],
-  ].map(([l,v,c])=>'<span class="badge '+c+'" style="font-size:12px;padding:4px 10px">'+l+'：'+v+'</span>').join('');
-
+  const ok=preview.filter(r=>r.status==='ok').length,skip=preview.filter(r=>r.status==='skip').length,err=preview.filter(r=>r.status==='error').length;
+  document.getElementById('csv-preview-stats').innerHTML=[['追加予定',ok+'件','green'],['スキップ',skip+'件','amber'],['エラー',err+'件',err?'red':'blue']].map(([l,v,c])=>'<span class="badge '+c+'" style="font-size:12px;padding:4px 10px">'+l+'：'+v+'</span>').join('');
   const smap={ok:'<span class="badge green">追加</span>',skip:'<span class="badge amber">スキップ</span>',error:'<span class="badge red">エラー</span>'};
-  document.getElementById('csv-preview-body').innerHTML=rows.map(r=>
+  document.getElementById('csv-preview-body').innerHTML=preview.map(r=>
     '<tr><td>'+smap[r.status]+(r.reason?' <span style="font-size:11px;color:var(--text-secondary)">('+r.reason+')</span>':'')+'</td>'+
     '<td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.start+'</td><td>'+r.end+'</td>'+
     '<td style="text-align:right">'+r.brk+'</td>'+
@@ -864,64 +728,27 @@ function renderCSVPreview(rows) {
   document.getElementById('csv-preview-area').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function confirmCSVImport() {
-  if(!csvPendingRows.length){ showSettingsMsg('error','追加できる行がありません。'); return; }
-  const d=getData();
-  d.records=d.records.concat(csvPendingRows);
-  d.records.sort((a,b)=>a.date.localeCompare(b.date));
-  setData(d);
-  populateNameFilter(); populateExportNameFilter(); updateJsonPreview(); renderDashboard();
-  cancelCSVImport();
-  showSettingsMsg('success',csvPendingRows.length+' 件の記録をインポートしました。');
-  csvPendingRows=[];
-}
-function cancelCSVImport() {
-  document.getElementById('csv-preview-area').style.display='none';
-  document.getElementById('csv-preview-body').innerHTML='';
-  csvPendingRows=[];
-}
-function showSettingsMsg(type,text) {
-  const el=document.getElementById('csv-msg');
-  showMsg(el,type,text);
-}
+window.confirmCSVImport = async () => {
+  if(!csvPendingRows.length){showSettingsMsg('error','追加できる行がありません。');return;}
+  try{
+    const batch=writeBatch(db);
+    csvPendingRows.forEach(r=>batch.set(doc(collection(db,'records')),r));
+    await batch.commit();
+    await loadRecords();
+    renderRecords();
+    cancelCSVImport();
+    showSettingsMsg('success',csvPendingRows.length+' 件の記録をインポートしました。');
+    csvPendingRows=[];
+  }catch(e){showSettingsMsg('error','インポートに失敗しました。');}
+};
+window.cancelCSVImport=()=>{document.getElementById('csv-preview-area').style.display='none';csvPendingRows=[];};
 
-// ══════════════════════════════════════════════
-//  JSON
-// ══════════════════════════════════════════════
-function exportJSON() {
-  downloadBlob(new Blob([JSON.stringify(getData(),null,2)],{type:'application/json'}),'records.json');
-}
-function handleJSONImport(e) {
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{ try{
-    const imp=JSON.parse(ev.target.result);
-    if(Array.isArray(imp.records)){
-      setData(imp); migrateStaff();
-      populateNameFilter(); populateExportNameFilter(); updateJsonPreview(); renderDashboard();
-      showSettingsMsg('success','インポート完了：記録 '+imp.records.length+' 件を読み込みました。');
-    } else showSettingsMsg('error','フォーマットが正しくありません。');
-  }catch(err){ showSettingsMsg('error','JSONの解析に失敗しました。'); } };
-  reader.readAsText(file);
-  e.target.value='';
-}
+function showSettingsMsg(type,text){showMsg(document.getElementById('csv-msg'),type,text);}
 
-function downloadBlob(blob,filename) {
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+function downloadBlob(blob,filename){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-
-function updateJsonPreview() {
-  const el=document.getElementById('json-preview'); if(!el) return;
-  const d=getData();
-  const preview={staff:d.staff,records:d.records.slice(-3)};
-  el.textContent=JSON.stringify(preview,null,2)+(d.records.length>3?'\n// ... 他 '+(d.records.length-3)+' 件':'');
-}
-
-// ══════════════════════════════════════════════
-//  Boot
-// ══════════════════════════════════════════════
-if(sessionStorage.getItem('admin_auth')==='1') showAdminApp();
 </script>
 </body>
 </html>
