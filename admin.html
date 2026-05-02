@@ -221,6 +221,15 @@
       <button class="btn" onclick="renderRecords()">絞り込み</button>
       <button class="btn danger" onclick="clearAll()" style="margin-left:auto">全件削除</button>
     </div>
+
+    <!-- 絞り込み後の集計サマリー -->
+    <div id="records-summary" style="display:none;margin-bottom:1rem">
+      <!-- 全体合計 -->
+      <div id="records-total-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem"></div>
+      <!-- 個人別合計（全員表示時のみ） -->
+      <div id="records-person-grid" style="display:none"></div>
+    </div>
+
     <div class="table-wrap">
       <table>
         <thead><tr><th>日付</th><th>氏名</th><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>時給</th><th>給与</th><th>備考</th><th></th></tr></thead>
@@ -664,21 +673,101 @@ window.renderDashboard = async () => {
 
 // ── Records list ──
 window.renderRecords = () => {
-  const nameF=document.getElementById('r-name-filter').value;
-  const monthF=document.getElementById('r-month-filter').value;
-  let recs=[...recordsCache].reverse();
-  if(nameF) recs=recs.filter(r=>r.name===nameF);
-  if(monthF) recs=recs.filter(r=>r.date.startsWith(monthF));
-  const body=document.getElementById('records-body');
-  const count=document.getElementById('records-count');
-  if(!recs.length){
-    body.innerHTML='<tr><td colspan="10"><div class="empty">条件に一致する記録がありません</div></td></tr>';
-    count.textContent='';return;
+  const nameF  = document.getElementById('r-name-filter').value;
+  const monthF = document.getElementById('r-month-filter').value;
+  let recs = [...recordsCache].reverse();
+  if (nameF)  recs = recs.filter(r => r.name === nameF);
+  if (monthF) recs = recs.filter(r => r.date.startsWith(monthF));
+
+  const body    = document.getElementById('records-body');
+  const count   = document.getElementById('records-count');
+  const summary = document.getElementById('records-summary');
+  const totalGrid  = document.getElementById('records-total-grid');
+  const personGrid = document.getElementById('records-person-grid');
+
+  if (!recs.length) {
+    body.innerHTML = '<tr><td colspan="10"><div class="empty">条件に一致する記録がありません</div></td></tr>';
+    count.textContent = '';
+    summary.style.display = 'none';
+    return;
   }
-  body.innerHTML=recs.map(r=>{
-    const wage=getWage(r.name);
-    const sal=wage?calcSalary(r.work,wage):null;
-    return '<tr><td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.start+'</td><td>'+r.end+'</td>'+
+
+  // ── 全体合計 ──
+  const totalDays = new Set(recs.map(r => r.date)).size;
+  const totalWork = recs.reduce((s, r) => s + r.work, 0);
+  const totalSal  = recs.reduce((s, r) => s + calcSalary(r.work, getWage(r.name)), 0);
+  const label     = [nameF, monthF].filter(Boolean).join(' / ') || '全件';
+
+  totalGrid.innerHTML = [
+    ['対象', label, ''],
+    ['出勤日数（延べ）', totalDays + ' 日', ''],
+    ['総実働時間', minToH(totalWork) + ' h', Math.floor(totalWork/60)+'時間'+(totalWork%60)+'分'],
+    ['給与合計', fmtYen(totalSal), '時給設定ありのみ'],
+  ].map(([l, v, s]) =>
+    '<div style="background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px 14px;text-align:center">'+
+    '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">'+l+'</div>'+
+    '<div style="font-size:18px;font-weight:600">'+v+'</div>'+
+    (s?'<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px">'+s+'</div>':'')+
+    '</div>'
+  ).join('');
+
+  // ── 個人別合計（全員表示時のみ）──
+  const people = [...new Set(recs.map(r => r.name))];
+  if (!nameF && people.length > 1) {
+    personGrid.style.display = 'block';
+    personGrid.innerHTML =
+      '<div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary)">個人別合計</div>'+
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'+
+      '<thead><tr>'+
+        '<th style="background:var(--bg-secondary);padding:8px 12px;text-align:left;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary)">氏名</th>'+
+        '<th style="background:var(--bg-secondary);padding:8px 12px;text-align:right;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary)">出勤日数</th>'+
+        '<th style="background:var(--bg-secondary);padding:8px 12px;text-align:right;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary)">実働時間</th>'+
+        '<th style="background:var(--bg-secondary);padding:8px 12px;text-align:right;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary)">時給</th>'+
+        '<th style="background:var(--bg-secondary);padding:8px 12px;text-align:right;border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary)">給与合計</th>'+
+      '</tr></thead><tbody>'+
+      people.map(name => {
+        const pr   = recs.filter(r => r.name === name);
+        const days = new Set(pr.map(r => r.date)).size;
+        const work = pr.reduce((s, r) => s + r.work, 0);
+        const wage = getWage(name);
+        const sal  = calcSalary(work, wage);
+        const ini  = initials(name);
+        return '<tr>'+
+          '<td style="padding:9px 12px;border-bottom:0.5px solid var(--border)">'+
+            '<div style="display:flex;align-items:center;gap:8px">'+
+              '<div style="width:28px;height:28px;border-radius:50%;background:var(--purple-light);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--purple-dark);flex-shrink:0">'+ini+'</div>'+
+              name+
+            '</div>'+
+          '</td>'+
+          '<td style="padding:9px 12px;border-bottom:0.5px solid var(--border);text-align:right">'+days+' 日</td>'+
+          '<td style="padding:9px 12px;border-bottom:0.5px solid var(--border);text-align:right"><span class="badge green">'+minToH(work)+'h</span></td>'+
+          '<td style="padding:9px 12px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--text-secondary)">'+(wage?fmtYen(wage):'—')+'</td>'+
+          '<td style="padding:9px 12px;border-bottom:0.5px solid var(--border);text-align:right">'+
+            (wage?'<span class="badge purple">'+fmtYen(sal)+'</span>':'<span style="color:var(--text-tertiary)">—</span>')+
+          '</td>'+
+          '</tr>';
+      }).join('')+
+      // 合計行
+      '<tr style="background:var(--bg-secondary);font-weight:600">'+
+        '<td style="padding:9px 12px">合計</td>'+
+        '<td style="padding:9px 12px;text-align:right">'+totalDays+' 日</td>'+
+        '<td style="padding:9px 12px;text-align:right">'+minToH(totalWork)+'h</td>'+
+        '<td style="padding:9px 12px"></td>'+
+        '<td style="padding:9px 12px;text-align:right">'+fmtYen(totalSal)+'</td>'+
+      '</tr>'+
+      '</tbody></table></div>';
+  } else {
+    personGrid.style.display = 'none';
+  }
+
+  summary.style.display = 'block';
+
+  // ── 記録テーブル ──
+  body.innerHTML = recs.map(r => {
+    const wage = getWage(r.name);
+    const sal  = wage ? calcSalary(r.work, wage) : null;
+    return '<tr>'+
+      '<td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.start+'</td><td>'+r.end+'</td>'+
       '<td style="text-align:right">'+r.break+'</td>'+
       '<td><span class="badge green">'+minToH(r.work)+'h</span></td>'+
       '<td style="text-align:right;color:var(--text-secondary)">'+(wage?fmtYen(wage):'—')+'</td>'+
@@ -689,7 +778,7 @@ window.renderRecords = () => {
         '<button class="btn danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteRecord(\''+r.docId+'\')">削除</button>'+
       '</td></tr>';
   }).join('');
-  count.textContent=recs.length+' 件表示中';
+  count.textContent = recs.length + ' 件表示中';
 };
 
 // ── Edit Modal ──
