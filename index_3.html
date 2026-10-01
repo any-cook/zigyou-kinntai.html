@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>勤怠記録システム</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="勤怠管理">
+<meta name="theme-color" content="#185FA5">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#fff; --bg-secondary:#f7f7f5; --bg-tertiary:#f0efe8;
+    --text:#1a1a18; --text-secondary:#6b6b67; --text-tertiary:#9e9e9a;
+    --border:rgba(0,0,0,0.12); --border-md:rgba(0,0,0,0.22);
+    --radius-md:8px; --radius-lg:12px;
+    --blue:#185FA5; --blue-light:#E6F1FB; --blue-dark:#0C447C;
+    --green:#1D9E75; --green-light:#E1F5EE; --green-dark:#085041;
+    --amber:#BA7517; --amber-light:#FAEEDA; --amber-dark:#633806;
+    --red:#A32D2D; --red-light:#FCEBEB;
+    --font:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1c1c1a; --bg-secondary:#252523; --bg-tertiary:#2e2e2c;
+      --text:#f0efe8; --text-secondary:#9e9e9a; --text-tertiary:#6b6b67;
+      --border:rgba(255,255,255,0.1); --border-md:rgba(255,255,255,0.2);
+      --blue-light:#042C53; --blue-dark:#85B7EB;
+      --green-light:#04342C; --green-dark:#9FE1CB;
+      --amber-light:#412402; --amber-dark:#FAC775;
+      --red-light:#501313;
+    }
+  }
+  body { font-family:var(--font); font-size:14px; color:var(--text); background:var(--bg-tertiary); min-height:100vh; }
+
+  .loading-overlay { position:fixed; inset:0; background:var(--bg-tertiary); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999; gap:14px; }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-size:13px; color:var(--text-secondary); }
+
+  .login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .login-card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:2.5rem 2rem; width:100%; max-width:360px; text-align:center; }
+  .login-icon { width:64px; height:64px; margin:0 auto 1rem; border-radius:14px; overflow:hidden; }
+  .login-icon img { width:100%; height:100%; display:block; }
+  .login-title { font-size:18px; font-weight:600; margin-bottom:4px; }
+  .login-sub { font-size:13px; color:var(--text-secondary); margin-bottom:1.5rem; }
+  .login-form { text-align:left; display:flex; flex-direction:column; gap:14px; }
+  .login-form label { font-size:12px; font-weight:500; color:var(--text-secondary); display:block; margin-bottom:4px; }
+  .login-form input { width:100%; height:44px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 12px; font-size:16px; background:var(--bg); color:var(--text); font-family:var(--font); }
+  .login-form input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(24,95,165,0.15); }
+
+  header { background:var(--bg); border-bottom:0.5px solid var(--border); padding:0 1rem; display:flex; align-items:center; gap:10px; height:52px; position:sticky; top:0; z-index:100; }
+  .logo { font-size:15px; font-weight:600; color:var(--blue); white-space:nowrap; }
+  .header-badge { font-size:11px; background:var(--blue-light); color:var(--blue-dark); padding:3px 10px; border-radius:20px; font-weight:500; }
+  .header-right { margin-left:auto; font-size:12px; color:var(--text-tertiary); display:flex; gap:10px; align-items:center; }
+  @media(max-width:520px){ #header-date, .header-badge { display:none; } }
+  .tab-bar { display:flex; background:var(--bg); border-bottom:0.5px solid var(--border); padding:0 1rem; overflow-x:auto; }
+  .tab-btn { padding:11px 18px; border:none; background:none; cursor:pointer; font-size:13px; color:var(--text-secondary); border-bottom:2px solid transparent; margin-bottom:-0.5px; white-space:nowrap; font-family:var(--font); }
+  .tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
+  .container { max-width:860px; margin:0 auto; padding:1rem; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .card { background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem; margin-bottom:1rem; }
+  .section-title { font-size:16px; font-weight:600; margin-bottom:1rem; }
+
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:580px){ .form-grid { grid-template-columns:1fr; } }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  .form-group label { font-size:12px; font-weight:500; color:var(--text-secondary); }
+  .form-group input { height:42px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 12px; font-size:16px; background:var(--bg); color:var(--text); font-family:var(--font); width:100%; }
+  .form-group input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(24,95,165,0.15); }
+  .full-width { grid-column:1/-1; }
+  .check { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); cursor:pointer; }
+  .check input { width:18px; height:18px; }
+
+  .btn { height:36px; padding:0 18px; border-radius:var(--radius-md); border:0.5px solid var(--border-md); cursor:pointer; font-size:13px; font-family:var(--font); background:var(--bg); color:var(--text); display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; }
+  .btn:hover { background:var(--bg-secondary); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .btn.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .btn.primary:hover { background:var(--blue-dark); }
+  .btn.lg { height:44px; font-size:15px; font-weight:500; width:100%; }
+  .btn.danger { color:var(--red); border-color:var(--red); }
+  .btn.sm { height:28px; padding:0 10px; font-size:12px; }
+
+  .msg { padding:10px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:1rem; display:none; line-height:1.6; }
+  .msg.success { background:var(--green-light); color:var(--green-dark); }
+  .msg.error { background:var(--red-light); color:var(--red); }
+
+  .badge { display:inline-block; font-size:11px; padding:3px 8px; border-radius:var(--radius-md); white-space:nowrap; font-weight:500; }
+  .badge.green { background:var(--green-light); color:var(--green-dark); }
+  .badge.amber { background:var(--amber-light); color:var(--amber-dark); }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:var(--bg-secondary); font-weight:500; text-align:left; padding:9px 10px; border-bottom:0.5px solid var(--border); white-space:nowrap; font-size:12px; color:var(--text-secondary); }
+  td { padding:9px 10px; border-bottom:0.5px solid var(--border); vertical-align:middle; white-space:nowrap; }
+  td.note { white-space:normal; color:var(--text-secondary); min-width:80px; }
+  tr:last-child td { border-bottom:none; }
+
+  .filter-bar { display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; align-items:center; }
+  .filter-bar input[type="month"] { height:36px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); padding:0 10px; font-size:14px; background:var(--bg); color:var(--text); font-family:var(--font); }
+  .filter-bar label { font-size:12px; color:var(--text-secondary); }
+
+  .empty { text-align:center; padding:2.5rem 1rem; color:var(--text-tertiary); font-size:13px; line-height:1.8; }
+  .preview-pill { font-size:13px; color:var(--text-secondary); padding:8px 14px; background:var(--bg-secondary); border-radius:var(--radius-md); }
+  .user-info-bar { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--blue-light); border-radius:var(--radius-md); margin-bottom:1rem; font-size:13px; color:var(--blue-dark); }
+  .user-avatar { width:32px; height:32px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; }
+  .summary-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:1rem; }
+  .summary-cell { background:var(--bg-secondary); border-radius:var(--radius-md); padding:12px 8px; text-align:center; }
+  .summary-cell .s-label { font-size:11px; color:var(--text-secondary); margin-bottom:4px; }
+  .summary-cell .s-value { font-size:18px; font-weight:600; }
+  .scroll-hint { font-size:11px; color:var(--text-tertiary); text-align:right; margin-top:6px; }
+  .fb-status { display:inline-flex; align-items:center; gap:5px; font-size:11px; }
+  .fb-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
+  .fb-dot.off { background:var(--red); }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">接続中...</div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-icon"><img src="icon-192.png" alt=""></div>
+    <div class="login-title">勤怠記録システム</div>
+    <div class="login-sub">お名前を入力してログインしてください</div>
+    <div class="login-form">
+      <div>
+        <label for="login-name">氏名</label>
+        <input type="text" id="login-name" placeholder="例：田中 太郎" autocomplete="name"
+          onkeydown="if(event.key==='Enter')login()" oninput="hideMsg('login-msg')">
+      </div>
+      <div id="login-msg" class="msg" style="margin-bottom:0"></div>
+      <button class="btn primary lg" id="login-btn" onclick="login()">ログイン</button>
+      <div style="text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:4px">
+        管理者の方は <a href="admin.html" style="color:var(--blue);text-decoration:none">管理者画面</a> からログインしてください
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+<header>
+  <div class="logo">勤怠記録</div>
+  <div class="header-badge">スタッフ</div>
+  <div class="header-right">
+    <div class="fb-status"><div class="fb-dot" id="fb-dot"></div><span id="fb-status-text">接続中</span></div>
+    <span id="header-date"></span>
+    <button class="btn sm" onclick="logout()">ログアウト</button>
+  </div>
+</header>
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="input" onclick="switchTab('input')">勤務を記録</button>
+  <button class="tab-btn" data-tab="myrecords" onclick="switchTab('myrecords')">自分の記録</button>
+</div>
+<div class="container">
+
+  <div class="page active" id="tab-input">
+    <div class="card">
+      <div id="user-info-bar" class="user-info-bar"></div>
+      <div class="section-title">出勤記録を追加</div>
+      <div id="input-msg" class="msg"></div>
+      <div class="form-grid">
+        <div class="form-group full-width"><label for="f-date">日付 *</label><input type="date" id="f-date"></div>
+        <div class="form-group"><label for="f-start">出勤時間 *</label><input type="time" id="f-start" value="09:00"></div>
+        <div class="form-group"><label for="f-end">退勤時間 *</label><input type="time" id="f-end" value="18:00"></div>
+        <div class="full-width"><label class="check"><input type="checkbox" id="f-overnight"> 退勤は翌日（日付をまたぐ勤務）</label></div>
+        <div class="form-group"><label for="f-break">休憩時間（分）</label><input type="number" id="f-break" value="60" min="0" max="480" step="5" inputmode="numeric"></div>
+        <div class="form-group"><label for="f-note">備考</label><input type="text" id="f-note" placeholder="任意" maxlength="200"></div>
+        <div class="full-width" style="font-size:12px;color:var(--text-tertiary)">※ 休憩15分以下は実働時間から差し引きません</div>
+        <div class="full-width" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn primary" id="add-btn" onclick="addRecord()" style="height:42px;padding:0 24px">記録を追加</button>
+          <div class="preview-pill" id="calc-preview">実働時間を自動計算します</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="font-size:15px">選択日の自分の記録</div>
+      <div id="today-list"><div class="empty">まだ記録がありません</div></div>
+    </div>
+  </div>
+
+  <div class="page" id="tab-myrecords">
+    <div class="card">
+      <div class="section-title">自分の記録</div>
+      <div class="filter-bar">
+        <label for="my-month">月：</label>
+        <input type="month" id="my-month" onchange="renderMyRecords()">
+        <button class="btn" onclick="renderMyRecords()">表示</button>
+      </div>
+      <div class="summary-row" id="my-summary">
+        <div class="summary-cell"><div class="s-label">出勤日数</div><div class="s-value">—</div></div>
+        <div class="summary-cell"><div class="s-label">総実働時間</div><div class="s-value">—</div></div>
+        <div class="summary-cell"><div class="s-label">総休憩時間</div><div class="s-value">—</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>日付</th><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>備考</th><th></th></tr></thead>
+          <tbody id="my-records-body"><tr><td colspan="7"><div class="empty">記録がありません</div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="scroll-hint" id="my-count"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, where, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCp6SMs3WkvV-wc6KT-hDVVppfWNjRIvAQ",
+  authDomain: "zigyou-kintai.firebaseapp.com",
+  projectId: "zigyou-kintai",
+  storageBucket: "zigyou-kintai.firebasestorage.app",
+  messagingSenderId: "236596465936",
+  appId: "1:236596465936:web:c128c1bdeb27eaffb91595"
+};
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ════════ 共通ユーティリティ ════════
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+// 端末の現地時刻（日本時間）で日付を作る
+function localDate(d = new Date()) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function timeToMin(t) { const m = String(t || '').match(/^(\d{1,2}):(\d{2})/); return m ? (+m[1]) * 60 + (+m[2]) : NaN; }
+// 実働（分）。15分以下の休憩は差し引かない。翌日退勤は+24h。
+function calcWork(start, end, brk, overnight) {
+  const s = timeToMin(start), e0 = timeToMin(end);
+  if (isNaN(s) || isNaN(e0)) return null;
+  const e = overnight ? e0 + 1440 : e0;
+  if (e <= s) return null;
+  const b = Math.max(0, parseInt(brk) || 0);
+  const w = e - s - (b <= 15 ? 0 : b);
+  return w < 0 ? null : w;
+}
+function workOf(r) { const w = calcWork(r.start, r.end, r.break, r.overnight); return w === null ? (r.work || 0) : w; }
+function minToH(m) { return (m / 60).toFixed(2); }
+function endLabel(r) { return esc(r.end) + (r.overnight ? ' <span class="badge amber">翌</span>' : ''); }
+function showMsg(id, type, text) {
+  const el = $(id); el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => { el.style.display = 'none'; }, 6000);
+}
+window.hideMsg = id => { const el = $(id); if (el) el.style.display = 'none'; };
+function setStatus(ok) { $('fb-dot').className = 'fb-dot' + (ok ? '' : ' off'); $('fb-status-text').textContent = ok ? '接続中' : 'オフライン'; }
+function errText(e) {
+  const c = (e && e.code) || '';
+  if (c.includes('admin-restricted-operation') || c.includes('operation-not-allowed')) return '初期設定が完了していません（匿名ログインが無効です）。管理者に連絡してください。';
+  if (c.includes('permission-denied')) return 'この操作は許可されていません。';
+  return '接続できませんでした。通信環境を確認してください。';
+}
+
+// ════════ 認証（端末ごとの匿名ログイン） ════════
+async function ensureAuth() {
+  if (!auth.currentUser) await new Promise(res => { const u = onAuthStateChanged(auth, () => { u(); res(); }); });
+  if (!auth.currentUser) await signInAnonymously(auth);
+  return auth.currentUser;
+}
+
+let me = null;          // { id, name }
+let unsubToday = null;
+
+function readSession() { try { return JSON.parse(sessionStorage.getItem('staff_session') || 'null'); } catch (e) { return null; } }
+
+async function boot() {
+  let err = '';
+  try { await ensureAuth(); await getDocs(collection(db, 'staff')); setStatus(true); }
+  catch (e) { console.error(e); err = errText(e); }
+  $('loading-overlay').style.display = 'none';
+  const s = readSession();
+  if (s && s.id && !err) { me = s; showApp(); }
+  else { $('login-screen').style.display = 'flex'; if (err) showMsg('login-msg', 'error', err); }
+}
+boot();
+
+window.login = async () => {
+  const name = $('login-name').value.trim();
+  if (!name) { showMsg('login-msg', 'error', '氏名を入力してください。'); return; }
+  const btn = $('login-btn'); btn.disabled = true;
+  try {
+    await ensureAuth();
+    const snap = await getDocs(collection(db, 'staff'));
+    const hit = snap.docs.map(d => ({ id: d.id, ...d.data() })).find(s => s.active !== false && s.name === name);
+    if (!hit) { showMsg('login-msg', 'error', '登録されていない名前です。管理者に登録を依頼してください。'); return; }
+    me = { id: hit.id, name: hit.name };
+    sessionStorage.setItem('staff_session', JSON.stringify(me));
+    showApp();
+  } catch (e) { console.error(e); showMsg('login-msg', 'error', errText(e)); }
+  finally { btn.disabled = false; }
+};
+
+window.logout = () => {
+  if (unsubToday) { unsubToday(); unsubToday = null; }
+  sessionStorage.removeItem('staff_session');
+  me = null;
+  $('app').style.display = 'none';
+  $('login-screen').style.display = 'flex';
+  $('login-name').value = '';
+};
+
+let inited = false;
+function showApp() {
+  $('login-screen').style.display = 'none';
+  $('app').style.display = 'block';
+  $('f-date').value = localDate();
+  $('my-month').value = localDate().slice(0, 7);
+  $('header-date').textContent = new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+  const ini = me.name.split(/[\s　]+/).map(s => s[0] || '').join('').slice(0, 2);
+  $('user-info-bar').innerHTML = '<div class="user-avatar">' + esc(ini) + '</div><div><strong>' + esc(me.name) + '</strong> さんとしてログイン中</div>';
+  if (!inited) {
+    ['f-start', 'f-end', 'f-break', 'f-overnight'].forEach(id => $(id).addEventListener('input', updatePreview));
+    $('f-overnight').addEventListener('change', updatePreview);
+    $('f-date').addEventListener('change', subscribeToday);
+    inited = true;
+  }
+  updatePreview();
+  subscribeToday();
+}
+
+window.switchTab = tab => {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  if (tab === 'myrecords') renderMyRecords();
+};
+
+function updatePreview() {
+  const el = $('calc-preview');
+  const m = calcWork($('f-start').value, $('f-end').value, $('f-break').value, $('f-overnight').checked);
+  if (m === null) {
+    el.textContent = $('f-overnight').checked ? '⚠ 時間を確認してください' : '⚠ 退勤が出勤より前です（日付をまたぐ場合は「翌日」にチェック）';
+    el.style.color = 'var(--red)';
+  } else {
+    el.textContent = '実働 ' + minToH(m) + 'h（' + m + '分）';
+    el.style.color = '';
+  }
+}
+
+// ════════ 記録追加 ════════
+window.addRecord = async () => {
+  const date = $('f-date').value, start = $('f-start').value, end = $('f-end').value;
+  const brk = Math.max(0, parseInt($('f-break').value) || 0);
+  const overnight = $('f-overnight').checked;
+  const note = $('f-note').value.trim();
+  if (!date || !start || !end) { showMsg('input-msg', 'error', '日付・出勤時間・退勤時間は必須です。'); return; }
+  const work = calcWork(start, end, brk, overnight);
+  if (work === null) { showMsg('input-msg', 'error', '退勤時間が出勤時間より前です。日付をまたぐ場合は「退勤は翌日」にチェックしてください。'); return; }
+  if (work > 16 * 60 && !confirm('実働が' + minToH(work) + '時間になります。このまま登録しますか？')) return;
+
+  const btn = $('add-btn'); btn.disabled = true; btn.textContent = '保存中...';
+  try {
+    const user = await ensureAuth();
+    await addDoc(collection(db, 'records'), {
+      staffId: me.id, name: me.name, date, start, end, break: brk, overnight, work, note,
+      uid: user.uid, createdAt: Date.now()
+    });
+    showMsg('input-msg', 'success', date + ' の記録を追加しました。実働 ' + minToH(work) + 'h');
+    $('f-note').value = '';
+  } catch (e) { console.error(e); showMsg('input-msg', 'error', '保存に失敗しました：' + errText(e)); }
+  finally { btn.disabled = false; btn.textContent = '記録を追加'; }
+};
+
+// ════════ 選択日の記録（リアルタイム） ════════
+function rowActions(r) {
+  const uid = auth.currentUser && auth.currentUser.uid;
+  return r.uid && r.uid === uid
+    ? '<button class="btn danger sm" data-del="' + esc(r.docId) + '">削除</button>'
+    : '<span style="font-size:11px;color:var(--text-tertiary)">修正は管理者へ</span>';
+}
+function subscribeToday() {
+  if (unsubToday) unsubToday();
+  const date = $('f-date').value, list = $('today-list');
+  list.innerHTML = '<div class="empty">読み込み中...</div>';
+  const q = query(collection(db, 'records'), where('staffId', '==', me.id), where('date', '==', date));
+  unsubToday = onSnapshot(q, snap => {
+    setStatus(true);
+    const recs = snap.docs.map(d => ({ ...d.data(), docId: d.id })).sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+    if (!recs.length) { list.innerHTML = '<div class="empty">この日の記録はまだありません</div>'; return; }
+    list.innerHTML = '<div class="table-wrap"><table><thead><tr><th>出勤</th><th>退勤</th><th>休憩(分)</th><th>実働(h)</th><th>備考</th><th></th></tr></thead><tbody>' +
+      recs.map(r => '<tr><td>' + esc(r.start) + '</td><td>' + endLabel(r) + '</td><td>' + esc(r.break) + '</td>' +
+        '<td><span class="badge green">' + minToH(workOf(r)) + 'h</span></td>' +
+        '<td class="note">' + esc(r.note) + '</td><td>' + rowActions(r) + '</td></tr>').join('') +
+      '</tbody></table></div>';
+  }, e => { console.error(e); setStatus(false); list.innerHTML = '<div class="empty">' + esc(errText(e)) + '</div>'; });
+}
+
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-del]');
+  if (!b) return;
+  if (!confirm('この記録を削除しますか？')) return;
+  try {
+    await deleteDoc(doc(db, 'records', b.dataset.del));
+    if ($('tab-myrecords').classList.contains('active')) renderMyRecords();
+  } catch (e) { console.error(e); alert('削除できませんでした。' + errText(e)); }
+});
+
+// ════════ 自分の記録 ════════
+async function renderMyRecords() {
+  const month = $('my-month').value, body = $('my-records-body'), count = $('my-count');
+  body.innerHTML = '<tr><td colspan="7"><div class="empty">読み込み中...</div></td></tr>';
+  try {
+    const col = collection(db, 'records');
+    const [byId, byName] = await Promise.all([
+      getDocs(query(col, where('staffId', '==', me.id))),
+      getDocs(query(col, where('name', '==', me.name)))   // 移行前の古い記録用
+    ]);
+    const map = new Map();
+    byId.docs.forEach(d => map.set(d.id, { ...d.data(), docId: d.id }));
+    byName.docs.forEach(d => { const x = d.data(); if (!x.staffId && !map.has(d.id)) map.set(d.id, { ...x, docId: d.id }); });
+    let recs = [...map.values()];
+    if (month) recs = recs.filter(r => (r.date || '').startsWith(month));
+    recs.sort((a, b) => b.date.localeCompare(a.date) || (b.start || '').localeCompare(a.start || ''));
+
+    const days = new Set(recs.map(r => r.date)).size;
+    const work = recs.reduce((s, r) => s + workOf(r), 0);
+    const brk  = recs.reduce((s, r) => s + (parseInt(r.break) || 0), 0);
+    $('my-summary').innerHTML = [['出勤日数', days + ' 日'], ['総実働時間', minToH(work) + ' h'], ['総休憩時間', (Math.round(brk / 6) / 10) + ' h']]
+      .map(([l, v]) => '<div class="summary-cell"><div class="s-label">' + l + '</div><div class="s-value">' + v + '</div></div>').join('');
+
+    if (!recs.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty">この月の記録がありません</div></td></tr>'; count.textContent = ''; return; }
+    body.innerHTML = recs.map(r => '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.start) + '</td><td>' + endLabel(r) + '</td>' +
+      '<td style="text-align:right">' + esc(r.break) + '</td><td><span class="badge green">' + minToH(workOf(r)) + 'h</span></td>' +
+      '<td class="note">' + esc(r.note) + '</td><td>' + rowActions(r) + '</td></tr>').join('');
+    count.textContent = recs.length + ' 件表示中';
+    setStatus(true);
+  } catch (e) {
+    console.error(e); setStatus(false);
+    body.innerHTML = '<tr><td colspan="7"><div class="empty">' + esc(errText(e)) + '</div></td></tr>';
+  }
+}
+window.renderMyRecords = renderMyRecords;
+</script>
+</body>
+</html>
